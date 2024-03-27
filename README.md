@@ -35,33 +35,25 @@ Support GCC, MDK5 IDE/compilers. More information of these compiler version as f
 
 | IDE/Compiler  | Tested version                    |
 | ---------- | ------------------------------------ |
-| MDK5       | 5.26.2                               |
+| MDK5       | 5.29                                 |
 | GCC        | Arm Embedded Toolchain 10.3-2021.10 (Env 1.3.5 embedded version)|
 
 Notice:
 (1) Please install Nu-Link_Keil_Driver for development.
 
-## 3. Program firmware
+## 3. Program firmware (Drag-and-Drop comming soon.)
 
 ### Step 1
 
 At first, you need to configure ICESW2 switch on the NuMaker-M2L31KI board. Set the four switches to ‘ON’ position. After the configuration is done, connect the NuMaker-M2L31KI board and your computer using the USB Type-C cable. After that, window manager will show a ‘NuMicro MCU’ virtual disk. Finally, you will use this virtual disk to burn firmware.
 
-[![NuLinkMe](https://i.imgur.com/us0Fhhu.png "NuLinkMe")](https://i.imgur.com/us0Fhhu.png "NuLinkMe")
-
-[![NuMicro MCU](https://i.imgur.com/lWnNtpM.png "NuMicro MCU")](https://i.imgur.com/lWnNtpM.png "NuMicro MCU")
-
 ### Step 2
 
 A simple firmware burning method is that you can drag and drop the binary image file to NuMicro MCU virtual disk or copy the binary file to NuMicro MCU disk to burn firmware.
 
-[![CopyTo](https://i.imgur.com/6NfGS7m.png "CopyTo")](https://i.imgur.com/6NfGS7m.png "CopyTo")
-
 ## 4. Test
 
 You can use Tera Term terminate emulator (or other software) to type commands of RTT. All parameters of serial communication are shown in below image. Here, you can find out the corresponding port number of Nuvoton Virtual Com Port in window device manager.
-
-[![Serial settings](https://i.imgur.com/5NYuSNM.png "Serial settings")](https://i.imgur.com/5NYuSNM.png "Serial settings")
 
 ## 5. Purchase
 
