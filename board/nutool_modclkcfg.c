@@ -399,7 +399,7 @@ void nutool_modclkcfg_deinit_ks(void)
 void nutool_modclkcfg_init_otg(void)
 {
     CLK_EnableModuleClock(OTG_MODULE);
-    CLK_SetModuleClock(OTG_MODULE, CLK_CLKSEL0_USBSEL_PLL, CLK_CLKDIV0_USB(2));
+    CLK_SetModuleClock(OTG_MODULE, CLK_CLKSEL0_USBSEL_PLL, CLK_CLKDIV0_USB(3));
 
     return;
 }
@@ -791,8 +791,8 @@ void nutool_modclkcfg_deinit_uart7(void)
 void nutool_modclkcfg_init_usbd(void)
 {
     CLK_EnableModuleClock(USBD_MODULE);
-    CLK_SetModuleClock(USBD_MODULE, CLK_CLKSEL0_USBSEL_HIRC48M, CLK_CLKDIV0_USB(1));
-    //CLK_SetModuleClock(USBD_MODULE, CLK_CLKSEL0_USBSEL_PLL, CLK_CLKDIV0_USB(2)); // PLL must be (48*(1+N)) MHz
+    //CLK_SetModuleClock(USBD_MODULE, CLK_CLKSEL0_USBSEL_HIRC48M, CLK_CLKDIV0_USB(1));
+    CLK_SetModuleClock(USBD_MODULE, CLK_CLKSEL0_USBSEL_PLL, CLK_CLKDIV0_USB(3)); // PLL must be (48*(1+N)) MHz
 
     return;
 }
@@ -807,8 +807,8 @@ void nutool_modclkcfg_deinit_usbd(void)
 void nutool_modclkcfg_init_usbh(void)
 {
     CLK_EnableModuleClock(USBH_MODULE);
-    CLK_SetModuleClock(USBH_MODULE, CLK_CLKSEL0_USBSEL_HIRC48M, CLK_CLKDIV0_USB(1));
-    //CLK_SetModuleClock(USBD_MODULE, CLK_CLKSEL0_USBSEL_PLL, CLK_CLKDIV0_USB(2)); // PLL must be (48*(1+N)) MHz
+    //CLK_SetModuleClock(USBD_MODULE, CLK_CLKSEL0_USBSEL_HIRC48M, CLK_CLKDIV0_USB(1));
+    CLK_SetModuleClock(USBD_MODULE, CLK_CLKSEL0_USBSEL_PLL, CLK_CLKDIV0_USB(3)); // PLL must be (48*(1+N)) MHz
 
     return;
 }
@@ -992,7 +992,18 @@ void nutool_modclkcfg_init_base(void)
     /* Set PCLK0 = PCLK1 = HCLK/2 */
     //CLK->PCLKDIV = (CLK_PCLKDIV_APB0DIV_DIV2 | CLK_PCLKDIV_APB1DIV_DIV2);
 
+    SystemCoreClockUpdate();
+
     return;
+}
+
+void Reset_Handler_PreInit(void)
+{
+    /* Unlock protected registers */
+    SYS_UnlockReg();
+
+    /* Enable base clock */
+    nutool_modclkcfg_init_base();
 }
 
 void nutool_modclkcfg_init(void)
@@ -1003,9 +1014,6 @@ void nutool_modclkcfg_init(void)
 
     /* Unlock protected registers */
     SYS_UnlockReg();
-
-    /* Enable base clock */
-    nutool_modclkcfg_init_base();
 
 #if defined(BSP_USING_GPIO)
     nutool_modclkcfg_init_gpa();
@@ -1070,7 +1078,7 @@ void nutool_modclkcfg_init(void)
 #if defined(BSP_USING_I2C2)
     nutool_modclkcfg_init_i2c2();
 #endif
-#if defined(BSP_USING_OTG) || defined(BSP_USING_USBH)
+#if defined(BSP_USING_OTG)
     nutool_modclkcfg_init_otg();
 #endif
 #if defined(BSP_USING_PDMA)

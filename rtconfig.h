@@ -85,6 +85,14 @@
 #define RT_SERIAL_USING_DMA
 #define RT_SERIAL_RB_BUFSZ 2048
 #define RT_USING_PIN
+#define RT_USING_PM
+#define PM_TICKLESS_THRESHOLD_TIME 2
+#define PM_ENABLE_DEBUG
+#define PM_ENABLE_SUSPEND_SLEEP_MODE
+#define PM_ENABLE_THRESHOLD_SLEEP_MODE
+#define PM_LIGHT_THRESHOLD_TIME 5
+#define PM_DEEP_THRESHOLD_TIME 20
+#define PM_STANDBY_THRESHOLD_TIME 100
 #define RT_USING_RTC
 
 /* Using USB */
@@ -129,6 +137,12 @@
 
 
 /* CYW43012 WiFi */
+
+
+/* BL808 WiFi */
+
+
+/* CYW43439 WiFi */
 
 
 /* IoT Cloud */
@@ -184,13 +198,18 @@
 
 /* peripheral libraries and drivers */
 
+/* HAL & SDK Drivers */
+
+/* STM32 HAL & SDK Drivers */
+
+
+/* Kendryte SDK */
+
+
 /* sensors drivers */
 
 
 /* touch drivers */
-
-
-/* Kendryte SDK */
 
 
 /* AI packages */
@@ -247,13 +266,17 @@
 
 /* On-chip Peripheral Drivers */
 
+#define SOC_FAMILY_NUMICRO
 #define SOC_SERIES_M2L31
+#define BSP_USING_CLK
+#define NU_CLK_INVOKE_WKTMR
 #define BSP_USING_GPIO
 #define BSP_USING_PDMA
 #define NU_PDMA_MEMFUN_ACTOR_MAX 2
 #define NU_PDMA_SGTBL_POOL_SIZE 16
 #define BSP_USING_RMC
 #define BSP_USING_RTC
+#define BSP_USING_TMR
 #define BSP_USING_UART
 #define BSP_USING_UART0
 

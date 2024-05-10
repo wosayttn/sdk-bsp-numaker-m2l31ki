@@ -1,3 +1,6 @@
+config SOC_FAMILY_NUMICRO
+    bool
+
 config SOC_SERIES_M2L31
     bool
     select ARCH_ARM_CORTEX_M23
@@ -16,6 +19,21 @@ config SOC_SERIES_M2L31
 
             config BSP_USING_CANFD1
                 bool "Enable CANFD1"
+        endif
+
+    menuconfig BSP_USING_CLK
+        bool "Enable Clock Controller(CLK)"
+        select RT_USING_PM
+        select BSP_USING_TMR
+        default y
+        help
+            Choose this option if you need CLK/PM function.
+            Notice: Enable the option will hold timer3 resource
+
+        if BSP_USING_CLK
+            config NU_CLK_INVOKE_WKTMR
+            bool "Enable SPD1 and DPD mode wakeup timer. (About 6.6 Secs)"
+            default y
         endif
 
     menuconfig BSP_USING_CRC

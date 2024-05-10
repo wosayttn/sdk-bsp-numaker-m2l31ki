@@ -60,7 +60,7 @@ void nutool_pincfg_init_usb(void)
     SYS->GPB_MFP3 = (SYS->GPB_MFP3 & ~SYS_GPB_MFP3_PB15MFP_Msk) | SYS_GPB_MFP3_PB15MFP_USB_VBUS_EN;
 
     /* USB_VBUS_ST (USB 1.1 over-current detect pin) multi-function pin - PC.14 */
-    //SYS->GPC_MFP3 = (SYS->GPC_MFP3 & ~SYS_GPC_MFP3_PC14MFP_Msk) | SYS_GPC_MFP3_PC14MFP_USB_VBUS_ST;
+    SYS->GPC_MFP3 = (SYS->GPC_MFP3 & ~SYS_GPC_MFP3_PC14MFP_Msk) | SYS_GPC_MFP3_PC14MFP_USB_VBUS_ST;
 
     /*  USB 1.1 port multi-function pin VBUS, D+, D-, and OTG_ID pins:
         PA12: USB_VBUS_DT
@@ -68,10 +68,10 @@ void nutool_pincfg_init_usb(void)
         PA14: USB_D+
         PA15: PB15_VBUS_SEN  */
     SYS->GPA_MFP3 &= ~(SYS_GPA_MFP3_PA12MFP_Msk | SYS_GPA_MFP3_PA13MFP_Msk |
-                       SYS_GPA_MFP3_PA14MFP_Msk /*| SYS_GPA_MFP3_PA15MFP_Msk */);
+                       SYS_GPA_MFP3_PA14MFP_Msk | SYS_GPA_MFP3_PA15MFP_Msk);
 
     SYS->GPA_MFP3 |= SYS_GPA_MFP3_PA12MFP_USB_VBUS | SYS_GPA_MFP3_PA13MFP_USB_D_N |
-                     SYS_GPA_MFP3_PA14MFP_USB_D_P /*| SYS_GPA_MFP3_PA15MFP_USB_OTG_ID */;
+                     SYS_GPA_MFP3_PA14MFP_USB_D_P | SYS_GPA_MFP3_PA15MFP_USB_OTG_ID;
 }
 
 void nutool_pincfg_init(void)

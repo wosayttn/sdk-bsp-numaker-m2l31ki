@@ -3,7 +3,9 @@
 Import('RTT_ROOT')
 from building import *
 
-cwd     = GetCurrentDir()
+cwd = GetCurrentDir()
+objs = []
+list = os.listdir(cwd)
 src = Glob('*.c') + Glob('*.cpp')
 CPPPATH = [cwd]
 group = []
@@ -20,4 +22,11 @@ elif GetDepend('BOARD_USING_USBH') and ( GetDepend('BSP_USING_OTG') or GetDepend
 else:
     group = DefineGroup('Drivers', src, depend = [''], CPPPATH = CPPPATH)
 
-Return('group')
+for d in list:
+    path = os.path.join(cwd, d)
+    if os.path.isfile(os.path.join(path, 'SConscript')):
+        objs = objs + SConscript(os.path.join(d, 'SConscript'))
+
+objs += group
+
+Return('objs')
