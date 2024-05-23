@@ -787,7 +787,6 @@ void nutool_modclkcfg_deinit_uart7(void)
     return;
 }
 
-
 void nutool_modclkcfg_init_usbd(void)
 {
     CLK_EnableModuleClock(USBD_MODULE);
@@ -800,8 +799,6 @@ void nutool_modclkcfg_init_usbd(void)
 void nutool_modclkcfg_deinit_usbd(void)
 {
     CLK_DisableModuleClock(USBD_MODULE);
-
-    return;
 }
 
 void nutool_modclkcfg_init_usbh(void)

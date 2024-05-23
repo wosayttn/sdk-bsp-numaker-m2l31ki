@@ -41,7 +41,7 @@ Support GCC, MDK5 IDE/compilers. More information of these compiler version as f
 Notice:
 (1) Please install Nu-Link_Keil_Driver for development.
 
-## 3. Program firmware (Drag-and-Drop comming soon.)
+## 3. Program firmware
 
 ### Step 1
 
@@ -62,8 +62,6 @@ You can use Tera Term terminate emulator (or other software) to type commands of
 ## 6. Resources
 
 * [M2L31 Series Introduction][2]
-* [M2L31 Resources][3]
 
   [1]: https://www.nuvoton.com.cn/products/microcontrollers/arm-cortex-m23-mcus/m2l31-series/?tab=5
   [2]: https://www.nuvoton.com.cn/products/microcontrollers/arm-cortex-m23-mcus/m2l31-series/?tab=1
-  [3]: https://www.nuvoton.com.cn/products/microcontrollers/arm-cortex-m23-mcus/m2l31-series/?group=Document&tab=2

@@ -60,7 +60,7 @@ static struct nu_i2s g_nu_spii2s_arr [] =
 #if defined(BSP_USING_SPII2S0)
     {
         .name = "spii2s0",
-        .i2s_base  = (I2S_T *)SPI0, //Avoid warning
+        .i2s_base  = (void *)SPI0, //Avoid warning
         .i2s_rst   = SPI0_RST,
         .i2s_dais = {
             [NU_I2S_DAI_PLAYBACK] = {
@@ -75,7 +75,7 @@ static struct nu_i2s g_nu_spii2s_arr [] =
 #if defined(BSP_USING_SPII2S1)
     {
         .name = "spii2s1",
-        .i2s_base  = (I2S_T *)SPI1, //Avoid warning
+        .i2s_base  = (void *)SPI1, //Avoid warning
         .i2s_rst   = SPI1_RST,
         .i2s_dais = {
             [NU_I2S_DAI_PLAYBACK] = {
@@ -90,7 +90,7 @@ static struct nu_i2s g_nu_spii2s_arr [] =
 #if defined(BSP_USING_SPII2S2)
     {
         .name = "spii2s2",
-        .i2s_base  = (I2S_T *)SPI2, //Avoid warning
+        .i2s_base  = (void *)SPI2, //Avoid warning
         .i2s_rst   = SPI2_RST,
         .i2s_dais = {
             [NU_I2S_DAI_PLAYBACK] = {
@@ -105,7 +105,7 @@ static struct nu_i2s g_nu_spii2s_arr [] =
 #if defined(BSP_USING_SPII2S3)
     {
         .name = "spii2s3",
-        .i2s_base  = (I2S_T *)SPI3, //Avoid warning
+        .i2s_base  = (void *)SPI3, //Avoid warning
         .i2s_rst   = SPI3_RST,
         .i2s_dais = {
             [NU_I2S_DAI_PLAYBACK] = {
@@ -161,6 +161,7 @@ static rt_err_t nu_spii2s_pdma_sc_config(nu_i2s_t psNuSPII2s, E_NU_I2S_DAI dai)
     int i;
     uint32_t u32Src, u32Dst;
     nu_pdma_cb_handler_t pfm_pdma_cb;
+    struct nu_pdma_chn_cb sChnCB;
 
     RT_ASSERT(psNuSPII2s != RT_NULL);
 
@@ -186,10 +187,13 @@ static rt_err_t nu_spii2s_pdma_sc_config(nu_i2s_t psNuSPII2s, E_NU_I2S_DAI dai)
         return -RT_EINVAL;
     }
 
-    result = nu_pdma_callback_register(psNuSPII2sDai->pdma_chanid,
-                                       pfm_pdma_cb,
-                                       (void *)psNuSPII2s,
-                                       NU_PDMA_EVENT_TRANSFER_DONE);
+    /* Register ISR callback function */
+    sChnCB.m_eCBType = eCBType_Event;
+    sChnCB.m_pfnCBHandler = pfm_pdma_cb;
+    sChnCB.m_pvUserData = (void *)psNuSPII2s;
+
+    nu_pdma_filtering_set(psNuSPII2sDai->pdma_chanid, NU_PDMA_EVENT_TRANSFER_DONE);
+    result = nu_pdma_callback_register(psNuSPII2sDai->pdma_chanid, &sChnCB);
     RT_ASSERT(result == RT_EOK);
 
     for (i = 0; i < NU_I2S_DMA_BUF_BLOCK_NUMBER; i++)
@@ -201,7 +205,8 @@ static rt_err_t nu_spii2s_pdma_sc_config(nu_i2s_t psNuSPII2s, E_NU_I2S_DAI dai)
                                     (dai == NU_I2S_DAI_PLAYBACK) ? u32Src + (i * NU_I2S_DMA_BUF_BLOCK_SIZE) : u32Src, //Memory or RXFIFO
                                     (dai == NU_I2S_DAI_PLAYBACK) ? u32Dst : u32Dst + (i * NU_I2S_DMA_BUF_BLOCK_SIZE), //TXFIFO or Memory
                                     (int32_t)NU_I2S_DMA_BUF_BLOCK_SIZE / 4,   // Transfer count
-                                    psNuSPII2sDai->pdma_descs[(i + 1) % NU_I2S_DMA_BUF_BLOCK_NUMBER]); // Next descriptor
+                                    psNuSPII2sDai->pdma_descs[(i + 1) % NU_I2S_DMA_BUF_BLOCK_NUMBER], // Next descriptor
+                                    0);  // Interrupt assert when every SG-table done.
         RT_ASSERT(result == RT_EOK);
     }
 
@@ -634,7 +639,7 @@ int rt_hw_spii2s_init(void)
             psNuSPII2sDai->pdma_chanid = -1;
             psNuSPII2sDai->fifo_block_idx = 0;
             RT_ASSERT(nu_hw_spii2s_pdma_allocate(psNuSPII2sDai) == RT_EOK);
-            RT_ASSERT(nu_pdma_sgtbls_allocate(&psNuSPII2sDai->pdma_descs[0], NU_I2S_DMA_BUF_BLOCK_NUMBER) == RT_EOK);
+            RT_ASSERT(nu_pdma_sgtbls_allocate(psNuSPII2sDai->pdma_chanid, &psNuSPII2sDai->pdma_descs[0], NU_I2S_DMA_BUF_BLOCK_NUMBER) == RT_EOK);
         }
 
         /* Register ops of audio device */

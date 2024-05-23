@@ -905,7 +905,8 @@ typedef struct
     __I  uint32_t DAT19[12];             /*!< [0x0200-0x022c] EADC Data Register 19~30 for Sample Module 19~30          */
     __IO uint32_t SCTL19[12];            /*!< [0x0230-0x025c] EADC Sample Module 19~30 Control Register                 */
     __IO uint32_t M19CTL1[12];           /*!< [0x0260-0x028c] EADC Sample Module 19~30 Control Register 1               */
-
+    __I  uint32_t RESERVE6[856];
+    __IO uint32_t TEST;                  /*!< [0x0ff0] EADC Test Mode Control Register                                  */
 } EADC_T;
 
 /**
@@ -1121,17 +1122,17 @@ typedef struct
 #define EADC_CTL_DMOF_Pos                (9)                                               /*!< EADC_T::CTL: DMOF Position             */
 #define EADC_CTL_DMOF_Msk                (0x1ul << EADC_CTL_DMOF_Pos)                      /*!< EADC_T::CTL: DMOF Mask                 */
 
-#define EADC_CTL_INTDELAY0_Pos           (16)                                              /*!< EADC_T::CTL: INTDELAY0 Position        */
-#define EADC_CTL_INTDELAY0_Msk           (0xful << EADC_CTL_INTDELAY0_Pos)                 /*!< EADC_T::CTL: INTDELAY0 Mask            */
+#define EADC_CTL_INTDEL0_Pos             (16)                                              /*!< EADC_T::CTL: INTDEL0 Position          */
+#define EADC_CTL_INTDEL0_Msk             (0xful << EADC_CTL_INTDEL0_Pos)                   /*!< EADC_T::CTL: INTDEL0 Mask              */
 
-#define EADC_CTL_INTDELAY1_Pos           (20)                                              /*!< EADC_T::CTL: INTDELAY1 Position        */
-#define EADC_CTL_INTDELAY1_Msk           (0xful << EADC_CTL_INTDELAY1_Pos)                 /*!< EADC_T::CTL: INTDELAY1 Mask            */
+#define EADC_CTL_INTDEL1_Pos             (20)                                              /*!< EADC_T::CTL: INTDEL1 Position          */
+#define EADC_CTL_INTDEL1_Msk             (0xful << EADC_CTL_INTDEL1_Pos)                   /*!< EADC_T::CTL: INTDEL1 Mask              */
 
-#define EADC_CTL_INTDELAY2_Pos           (24)                                              /*!< EADC_T::CTL: INTDELAY2 Position        */
-#define EADC_CTL_INTDELAY2_Msk           (0xful << EADC_CTL_INTDELAY2_Pos)                 /*!< EADC_T::CTL: INTDELAY2 Mask            */
+#define EADC_CTL_INTDEL2_Pos             (24)                                              /*!< EADC_T::CTL: INTDEL2 Position          */
+#define EADC_CTL_INTDEL2_Msk             (0xful << EADC_CTL_INTDEL2_Pos)                   /*!< EADC_T::CTL: INTDEL2 Mask              */
 
-#define EADC_CTL_INTDELAY3_Pos           (28)                                              /*!< EADC_T::CTL: INTDELAY3 Position        */
-#define EADC_CTL_INTDELAY3_Msk           (0xful << EADC_CTL_INTDELAY3_Pos)                 /*!< EADC_T::CTL: INTDELAY3 Mask            */
+#define EADC_CTL_INTDEL3_Pos             (28)                                              /*!< EADC_T::CTL: INTDEL3 Position          */
+#define EADC_CTL_INTDEL3_Msk             (0xful << EADC_CTL_INTDEL3_Pos)                   /*!< EADC_T::CTL: INTDEL3 Mask              */
 
 #define EADC_SWTRG_SWTRG_Pos             (0)                                               /*!< EADC_T::SWTRG: SWTRG Position          */
 #define EADC_SWTRG_SWTRG_Msk             (0x7ffffffful << EADC_SWTRG_SWTRG_Pos)            /*!< EADC_T::SWTRG: SWTRG Mask              */
@@ -2926,6 +2927,9 @@ typedef struct
 
 #define EADC_M30CTL1_EXTSTDIV_Pos        (16)                                              /*!< EADC_T::M30CTL1: EXTSTDIV Position     */
 #define EADC_M30CTL1_EXTSTDIV_Msk        (0x3ul << EADC_M30CTL1_EXTSTDIV_Pos)              /*!< EADC_T::M30CTL1: EXTSTDIV Mask         */
+
+#define EADC_TEST_DECADD_Pos             (8)                                               /*!< EADC_T::TEST: DECADD Position          */
+#define EADC_TEST_DECADD_Msk             (0x1UL << EADC_TEST_DECADD_Pos)                   /*!< EADC_T::TEST: DECADD Mask              */
 
 /**@}*/ /* EADC_CONST */
 /**@}*/ /* end of EADC register group */

@@ -10,6 +10,17 @@
 #include "rtconfig.h"
 #include "NuMicro.h"
 
+void eadc_test_pin(void)
+{
+    GPIO_SetMode(PB, BIT4 | BIT5 | BIT6 | BIT7, GPIO_MODE_INPUT);
+
+    SYS->GPB_MFP1 &= ~(SYS_GPB_MFP1_PB4MFP_Msk | SYS_GPB_MFP1_PB5MFP_Msk | SYS_GPB_MFP1_PB6MFP_Msk | SYS_GPB_MFP1_PB7MFP_Msk);
+    SYS->GPB_MFP1 |= (SYS_GPB_MFP1_PB4MFP_EADC0_CH4 | SYS_GPB_MFP1_PB5MFP_EADC0_CH5 | SYS_GPB_MFP1_PB6MFP_EADC0_CH6 | SYS_GPB_MFP1_PB7MFP_EADC0_CH7);
+
+    /* Disable digital path on these ADC pins */
+    GPIO_DISABLE_DIGITAL_PATH(PB, BIT4 | BIT5 | BIT6 | BIT7);
+}
+
 #if defined(BOARD_USING_NUTFT)
 void expansion_nutft_pin_init(void)
 {
@@ -20,11 +31,11 @@ void expansion_nutft_pin_init(void)
     SYS->GPA_MFP2 &= ~(SYS_GPA_MFP2_PA8MFP_Msk | SYS_GPA_MFP2_PA9MFP_Msk | SYS_GPA_MFP2_PA11MFP_Msk);
 #endif
 
-#if defined(BOARD_USING_NUTFT_LCM_TOUCH)
+#if defined(BOARD_USING_NUTFT_ADC_TOUCH)
     GPIO_SetMode(PB, BIT4 | BIT5 | BIT6 | BIT7, GPIO_MODE_INPUT);
 
     SYS->GPB_MFP1 &= ~(SYS_GPB_MFP1_PB4MFP_Msk | SYS_GPB_MFP1_PB5MFP_Msk | SYS_GPB_MFP1_PB6MFP_Msk | SYS_GPB_MFP1_PB7MFP_Msk);
-    SYS->GPB_MFP1 |= (SYS_GPB_MFP1_PB4MFP_EADC0_CH4 | SYS_GPB_MFP1_PB4MFP_EADC0_CH5 | SYS_GPB_MFP1_PB4MFP_EADC0_CH6 | SYS_GPB_MFP1_PB4MFP_EADC0_CH7);
+    SYS->GPB_MFP1 |= (SYS_GPB_MFP1_PB4MFP_EADC0_CH4 | SYS_GPB_MFP1_PB5MFP_EADC0_CH5 | SYS_GPB_MFP1_PB6MFP_EADC0_CH6 | SYS_GPB_MFP1_PB7MFP_EADC0_CH7);
 
     /* Disable digital path on these ADC pins */
     GPIO_DISABLE_DIGITAL_PATH(PB, BIT4 | BIT5 | BIT6 | BIT7);
@@ -87,6 +98,8 @@ void nutool_pincfg_init(void)
 #if defined(BOARD_USING_NUTFT)
     expansion_nutft_pin_init();
 #endif
+
+    //eadc_test_pin();
 
     return;
 }

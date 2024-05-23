@@ -253,10 +253,6 @@ config SOC_SERIES_M2L31
                 bool "Enable LPADC0"
         endif
 
-    config BSP_USING_LPGPIO
-        bool "Enable Low-Power General Purpose I/O (LPGPIO)"
-        select RT_USING_PIN
-
     menuconfig BSP_USING_LPI2C
         bool "Enable Low-Power I2C Serial Interface Controller(LPI2C)"
         select RT_USING_I2C
@@ -340,7 +336,7 @@ config SOC_SERIES_M2L31
 
             config BSP_USING_PWM0
                 select RT_USING_PWM
-                bool "Enable PWM1"
+                bool "Enable PWM0"
 
             config BSP_USING_PWM1
                 select RT_USING_PWM

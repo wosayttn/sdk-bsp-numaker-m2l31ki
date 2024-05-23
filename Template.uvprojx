@@ -7,7 +7,7 @@
 
   <Targets>
     <Target>
-      <TargetName>rtthread-ml231</TargetName>
+      <TargetName>rtthread-m2l31</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <pCCUsed>6100001::V6.10.1::.\ARMCLANG</pCCUsed>

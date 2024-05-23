@@ -38,7 +38,7 @@ extern "C" {
 #define __HIRC      (12000000UL)    /*!< Internal 48M RC Oscillator Frequency */
 #define __HIRC48    (48000000UL)    /*!< Internal 48M RC Oscillator Frequency */
 #define __MIRC      ( 4000000UL)    /*!< Internal 4M RC Oscillator Frequency */
-#define __HSI       (96000000UL)    /*!< Default output is 96MHz for PLL */
+#define __HSI       (72000000UL)    /*!< Default output is 72MHz for PLL */
 
 extern uint32_t SystemCoreClock;    /*!< System Clock Frequency (Core Clock)  */
 extern uint32_t CyclesPerUs;        /*!< Cycles per micro second              */

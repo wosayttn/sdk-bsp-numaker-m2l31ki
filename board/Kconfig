@@ -31,12 +31,6 @@ menu "Hardware Drivers Config"
                 help
                     Choose this option if you need USBH function mode.
 
-            config BOARD_USING_OTG
-                select BSP_USING_OTG
-                bool "Enable OTG(over USB1.1)"
-                help
-                    Choose this option if you need OTG function mode.
-
             config BOARD_USING_USB_NONE
                 select BSP_USING_USB_NONE
                 bool "Disable USB1.1 port"

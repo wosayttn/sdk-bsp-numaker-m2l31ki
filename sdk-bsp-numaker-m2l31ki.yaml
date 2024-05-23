@@ -14,7 +14,7 @@ board:
   sale_contact_global: https://www.nuvoton.com
   small_image: documents/images/small.png
   vendor: Nuvoton
-  version: v3.0
+  version: v2.1
 chip:
   chip_name: M2L31KIDAE
   clock_source: HXT
@@ -41,7 +41,7 @@ features_zh:
 - Nu-Link2-Me ICE
 pkg_type: Board_Support_Packages
 pkg_vendor: Nuvoton
-pkg_version: 1.0.0
+pkg_version: 1.0.1
 template_projects:
 - builtin_files:
   - files_and_folders:

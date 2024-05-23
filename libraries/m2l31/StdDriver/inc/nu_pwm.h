@@ -63,7 +63,7 @@ extern "C"
 #define PWM_SSCTL_SSRC_EPWM0                     (0UL<<PWM_SSCTL_SSRC_Pos)    /*!< Synchronous start source comes from EPWM0 */
 #define PWM_SSCTL_SSRC_EPWM1                     (1UL<<PWM_SSCTL_SSRC_Pos)    /*!< Synchronous start source comes from EPWM1 */
 #define PWM_SSCTL_SSRC_PWM0                      (2UL<<PWM_SSCTL_SSRC_Pos)    /*!< Synchronous start source comes from PWM0 */
-#define PWM_SSCTL_SSRC_PWM1                      (31UL<<PWM_SSCTL_SSRC_Pos)   /*!< Synchronous start source comes from PWM1 */
+#define PWM_SSCTL_SSRC_PWM1                      (3UL<<PWM_SSCTL_SSRC_Pos)    /*!< Synchronous start source comes from PWM1 */
 
 /*---------------------------------------------------------------------------------------------------------*/
 /*  Trigger Source Select Constant Definitions                                                             */
@@ -184,8 +184,6 @@ extern "C"
 #define PWM_CLKSRC_TIMER1                        (2UL)    /*!< PWM Clock source selects to TIMER1 overflow \hideinitializer */
 #define PWM_CLKSRC_TIMER2                        (3UL)    /*!< PWM Clock source selects to TIMER2 overflow \hideinitializer */
 #define PWM_CLKSRC_TIMER3                        (4UL)    /*!< PWM Clock source selects to TIMER3 overflow \hideinitializer */
-//#define PWM_CLKSRC_TIMER3                        (4UL)    /*!< PWM Clock source selects to TIMER3 overflow \hideinitializer */
-
 
 /*@}*/ /* end of group PWM_EXPORTED_CONSTANTS */
 

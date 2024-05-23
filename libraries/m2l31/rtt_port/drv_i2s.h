@@ -85,7 +85,7 @@ struct nu_i2s
     struct rt_audio_configure config;
 
     char *name;
-    I2S_T *i2s_base;
+    void *i2s_base;
     uint32_t i2s_rst;
 
     struct nu_i2s_dai i2s_dais[NU_I2S_DAI_CNT];

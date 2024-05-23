@@ -7,6 +7,6 @@ group = []
 if GetDepend('BSP_USING_USBH'):
 	src = Glob('*src/*.c') + Glob('src/*.cpp')
 	CPPPATH = [cwd + '/inc']
-	group = DefineGroup('m2354_usbhostlib', src, depend = [''], CPPPATH = CPPPATH)
+	group = DefineGroup('m2l31_usbhostlib', src, depend = [''], CPPPATH = CPPPATH)
 
 Return('group')

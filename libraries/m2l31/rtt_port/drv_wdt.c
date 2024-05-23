@@ -47,19 +47,6 @@
 /*                   7           18      262144      8.0000                      */
 /*                   8           20      1048576     32.000                      */
 /*-------------------------------------------------------------------------------*/
-/* clock = 96MHz HCLK divide 2048 = 93750 Hz.                                    */
-/*                                                                               */
-/*      working hz   toutsel     exp     cycles      timeout (s)                 */
-/*      46875        0           4       16          0.00034                     */
-/*                   1           6       64          0.00137                     */
-/*                   2           8       256         0.00546                     */
-/*                   3           10      1024        0.02185                     */
-/*                   4           12      4096        0.08738                     */
-/*                   5           14      16384       0.34953                     */
-/*                   6           16      65536       1.39810                     */
-/*                   7           18      262144      5.59241                     */
-/*                   8           20      1048576     22.3696                     */
-/*-------------------------------------------------------------------------------*/
 
 /* Private define ---------------------------------------------------------------*/
 
@@ -190,7 +177,7 @@ static int wdt_pm_frequency_change(const struct rt_device *device, rt_uint8_t mo
     new_hz = wdt_get_working_hz();
     clk = wdt_get_module_clock();
 
-    if (clk == CLK_CLKSEL1_WDTSEL_HCLK_DIV2048)
+    if (clk == LPSCC_CLKSEL0_WDTSEL_HCLK1_DIV2048)
     {
         if (new_hz == soft_time.clock_hz)
             return (int)(RT_EOK);

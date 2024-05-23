@@ -100,6 +100,9 @@ static rt_err_t nu_eadc_enabled(struct rt_adc_device *device, rt_uint32_t channe
 
 static rt_err_t nu_get_eadc_value(struct rt_adc_device *device, rt_uint32_t channel, rt_uint32_t *value)
 {
+#define CONFIG_SMPL_MODULE_IDX         0
+#define CONFIG_SMPL_MODULE_ACU_TIMES   EADC_MCTL1_ACU_32
+
     nu_eadc_t psNuEADC = (nu_eadc_t)device;
     rt_err_t ret = RT_ERROR;
 
@@ -120,21 +123,38 @@ static rt_err_t nu_get_eadc_value(struct rt_adc_device *device, rt_uint32_t chan
         goto exit_nu_get_eadc_value;
     }
 
-    EADC_ConfigSampleModule(psNuEADC->base, 0, EADC_SOFTWARE_TRIGGER, channel);
+    /* Configure the sample module for analog input channel and software trigger source. */
+    EADC_ConfigSampleModule(psNuEADC->base, CONFIG_SMPL_MODULE_IDX, EADC_SOFTWARE_TRIGGER, channel);
 
+    /* Set sample module external sampling time to 0 */
+    EADC_SetExtendSampleTime(psNuEADC->base, CONFIG_SMPL_MODULE_IDX, 0);
+
+    /* Enable Accumulate feature */
+    EADC_ENABLE_ACU(psNuEADC->base, CONFIG_SMPL_MODULE_IDX, EADC_MCTL1_ACU_32);
+
+    /* Enable Average feature */
+    EADC_ENABLE_AVG(psNuEADC->base, CONFIG_SMPL_MODULE_IDX);
+
+    /* Clear the A/D ADINT0 interrupt flag for safe */
     EADC_CLR_INT_FLAG(psNuEADC->base, EADC_STATUS2_ADIF0_Msk);
 
+    /* Enable the sample module interrupt. */
     EADC_ENABLE_INT(psNuEADC->base, BIT0);
-
-    EADC_ENABLE_SAMPLE_MODULE_INT(psNuEADC->base, 0, BIT0);
+    EADC_ENABLE_SAMPLE_MODULE_INT(psNuEADC->base, CONFIG_SMPL_MODULE_IDX, BIT0);
 
     EADC_START_CONV(psNuEADC->base, BIT0);
-
     while (EADC_GET_INT_FLAG(psNuEADC->base, BIT0) == 0);
 
+    /* Disable the sample module interrupt. */
     EADC_DISABLE_INT(psNuEADC->base, BIT0);
 
-    *value = EADC_GET_CONV_DATA(psNuEADC->base, 0);
+    /* Disable Average feature */
+    EADC_DISABLE_AVG(psNuEADC->base, CONFIG_SMPL_MODULE_IDX);
+
+    /* Disable Accumulate feature */
+    EADC_DISABLE_ACU(psNuEADC->base, CONFIG_SMPL_MODULE_IDX);
+
+    *value = EADC_GET_CONV_DATA(psNuEADC->base, CONFIG_SMPL_MODULE_IDX);
 
     ret = RT_EOK;
 
