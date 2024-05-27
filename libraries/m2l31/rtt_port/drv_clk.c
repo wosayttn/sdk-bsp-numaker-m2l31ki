@@ -373,6 +373,7 @@ void rt_pm_exit_critical(rt_uint32_t ctx, rt_uint8_t sleep_mode)
     rt_hw_interrupt_enable(ctx);
 }
 
+MSH_CMD_EXPORT(pm_get_wksrc, Get wake-up source);
 #endif /* BSP_USING_CLK */
 
 
