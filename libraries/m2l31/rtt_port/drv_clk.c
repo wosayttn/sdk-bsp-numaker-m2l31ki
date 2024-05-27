@@ -377,4 +377,3 @@ MSH_CMD_EXPORT(pm_get_wksrc, Get wake-up source);
 #endif /* BSP_USING_CLK */
 
 
-

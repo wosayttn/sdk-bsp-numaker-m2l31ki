@@ -1,12 +1,12 @@
 /**************************************************************************//**
 *
-* @copyright (C) 2020 Nuvoton Technology Corp. All rights reserved.
+* @copyright (C) 2019 Nuvoton Technology Corp. All rights reserved.
 *
 * SPDX-License-Identifier: Apache-2.0
 *
 * Change Logs:
 * Date            Author       Notes
-* 2020-3-03       FYChou       First version
+* 2020-1-16       Wayne        First version
 *
 ******************************************************************************/
 
@@ -37,9 +37,9 @@
 }
 #define FAL_PART_TABLE                                                        \
 {                                                                             \
-    {FAL_PART_MAGIC_WORD,   "filesystem",     FAL_USING_NOR_FLASH_DEV_NAME,    0,     (2*1024*1024), 0},  \
-    {FAL_PART_MAGIC_WORD,        "loader"     "LDROM",                    0,         RMC_LDROM_SIZE,  0},  \
-    {FAL_PART_MAGIC_WORD,          "bank",    "APROM",  RMC_APROM_BANK0_END,          RMC_BANK_SIZE,  0},  \
+    {FAL_PART_MAGIC_WORD, "filesystem", FAL_USING_NOR_FLASH_DEV_NAME, 0,     (2*1024*1024), 0},  \
+    {FAL_PART_MAGIC_WORD,     "loader", "LDROM",                      0,    RMC_LDROM_SIZE, 0},  \
+    {FAL_PART_MAGIC_WORD,       "bank", "APROM",    RMC_APROM_BANK0_END,     RMC_BANK_SIZE, 0},  \
 }
 
 #elif defined(BSP_USING_RMC)

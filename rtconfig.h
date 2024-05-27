@@ -94,7 +94,6 @@
 #define PM_DEEP_THRESHOLD_TIME 20
 #define PM_STANDBY_THRESHOLD_TIME 100
 #define RT_USING_RTC
-#define RT_USING_ALARM
 
 /* Using USB */
 

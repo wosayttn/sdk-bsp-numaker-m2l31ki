@@ -54,7 +54,7 @@ extern "C"
 
 #define RMC_APROM_SIZE          RMC_APROM_END         /*!< APROM Size                  \hideinitializer */
 #define RMC_BANK_SIZE           (RMC_APROM_SIZE/2UL)  /*!< APROM Bank Size             \hideinitializer */
-#define RMC_LDROM_SIZE          0x1000UL              /*!< LDROM Size (4 Kbytes)       \hideinitializer */
+#define RMC_LDROM_SIZE          0x2000UL              /*!< LDROM Size (8 Kbytes)       \hideinitializer */
 #define RMC_OTP_ENTRY_CNT       256UL                 /*!< OTP entry number            \hideinitializer */
 
 #define XOM_OFF_MARK            0x5A

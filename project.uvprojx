@@ -10,7 +10,7 @@
       <TargetName>rtthread-m2l31</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>6130001::V6.13.1::.\ARMCLANG</pCCUsed>
+      <pCCUsed>6100001::V6.10.1::.\ARMCLANG</pCCUsed>
       <uAC6>1</uAC6>
       <TargetOption>
         <TargetCommonOption>
@@ -388,14 +388,14 @@
               <FilePath>applications\main.c</FilePath>
             </File>
             <File>
-              <FileName>mnt.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>applications\mnt.c</FilePath>
-            </File>
-            <File>
               <FileName>pm_test.c</FileName>
               <FileType>1</FileType>
               <FilePath>applications\pm_test.c</FilePath>
+            </File>
+            <File>
+              <FileName>mnt.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\mnt.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -551,11 +551,6 @@
               <FileName>pm.c</FileName>
               <FileType>1</FileType>
               <FilePath>rt-thread\components\drivers\pm\pm.c</FilePath>
-            </File>
-            <File>
-              <FileName>alarm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>rt-thread\components\drivers\rtc\alarm.c</FilePath>
             </File>
             <File>
               <FileName>rtc.c</FileName>
@@ -788,11 +783,6 @@
           <GroupName>Fal</GroupName>
           <Files>
             <File>
-              <FileName>fal.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>rt-thread\components\fal\src\fal.c</FilePath>
-            </File>
-            <File>
               <FileName>fal_flash.c</FileName>
               <FileType>1</FileType>
               <FilePath>rt-thread\components\fal\src\fal_flash.c</FilePath>
@@ -801,6 +791,11 @@
               <FileName>fal_rtt.c</FileName>
               <FileType>1</FileType>
               <FilePath>rt-thread\components\fal\src\fal_rtt.c</FilePath>
+            </File>
+            <File>
+              <FileName>fal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>rt-thread\components\fal\src\fal.c</FilePath>
             </File>
             <File>
               <FileName>fal_partition.c</FileName>
