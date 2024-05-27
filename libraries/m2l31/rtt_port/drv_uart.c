@@ -929,6 +929,8 @@ static rt_err_t nu_uart_control(struct rt_serial_device *serial, int cmd, void *
         break;
 
     default:
+        /* Flush TX FIFO */
+        UART_WAIT_TX_EMPTY(base);
         result = -RT_EINVAL;
         break;
 

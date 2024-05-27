@@ -94,6 +94,7 @@
 #define PM_DEEP_THRESHOLD_TIME 20
 #define PM_STANDBY_THRESHOLD_TIME 100
 #define RT_USING_RTC
+#define RT_USING_ALARM
 
 /* Using USB */
 
@@ -119,9 +120,6 @@
 #define RT_USING_UTEST
 #define UTEST_THR_STACK_SIZE 4096
 #define UTEST_THR_PRIORITY 20
-
-/* RT-Thread Utestcases */
-
 
 /* RT-Thread online packages */
 
@@ -201,6 +199,9 @@
 /* HAL & SDK Drivers */
 
 /* STM32 HAL & SDK Drivers */
+
+
+/* Infineon HAL Packages */
 
 
 /* Kendryte SDK */
@@ -292,7 +293,5 @@
 /* Nuvoton Packages Config */
 
 #define NU_PKG_USING_UTILS
-#define UTEST_CMD_PREFIX "bsp.nuvoton.utest."
-#define BOARD_USE_UTEST
 
 #endif

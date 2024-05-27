@@ -345,7 +345,7 @@ void RTC_IRQHandler(void)
         RTC_CLEAR_ALARM_INT_FLAG(RTC);
 
         /* Send an alarm event to notify rt-thread alarm service. */
-        rt_alarm_update(&device_rtc, NULL);
+        rt_alarm_update(&device_rtc, 0);
     }
 #endif
 

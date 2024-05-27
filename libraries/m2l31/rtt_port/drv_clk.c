@@ -114,6 +114,37 @@ const static uint32_t g_au32SleepingMode[PM_SLEEP_MODE_MAX] =
     CONFIG_MODE_SHUTDOWN
 };
 
+uint32_t pm_get_wksrc(void)
+{
+    uint32_t u32RegRstsrc;
+
+    if ((u32RegRstsrc = CLK_GetPMUWKSrc()) != 0)
+    {
+        /* Release I/O hold status after wake-up from Standby Power-down Mode (SPD) */
+        CLK->IOPDCTL = 1;
+
+        rt_kprintf("CLK_PMUSTS:\n", u32RegRstsrc);
+
+        if ((u32RegRstsrc & CLK_PMUSTS_ACMPWK0_Msk) != 0)
+            rt_kprintf("Wake-up source is ACMP.\n");
+        if ((u32RegRstsrc & CLK_PMUSTS_RTCWK_Msk) != 0)
+            rt_kprintf("Wake-up source is RTC.\n");
+        if ((u32RegRstsrc & CLK_PMUSTS_TMRWK_Msk) != 0)
+            rt_kprintf("Wake-up source is Wake-up Timer.\n");
+        if ((u32RegRstsrc & CLK_PMUSTS_GPCWK0_Msk) != 0)
+            rt_kprintf("Wake-up source is GPIO PortC.\n");
+        if ((u32RegRstsrc & CLK_PMUSTS_LVRWK_Msk) != 0)
+            rt_kprintf("Wake-up source is LVR.\n");
+        if ((u32RegRstsrc & CLK_PMUSTS_BODWK_Msk) != 0)
+            rt_kprintf("Wake-up source is BOD.\n");
+
+        /* Clear Power Manager Status register */
+        CLK->PMUSTS = CLK_PMUSTS_CLRWK_Msk;
+    }
+
+    return u32RegRstsrc;
+}
+
 /* pm sleep() entry */
 static void pm_sleep(struct rt_pm *pm, rt_uint8_t mode)
 {
@@ -166,6 +197,10 @@ static void pm_sleep(struct rt_pm *pm, rt_uint8_t mode)
     default:
         return;
     }
+
+    /* Flush TX FIFO of default console UART. */
+    if (rt_console_get_device())
+        rt_device_control(rt_console_get_device(), 9527, 0);
 
     /* Set Power-down Mode */
     CLK_SetPowerDownMode(g_au32SleepingMode[mode]);
@@ -270,9 +305,7 @@ static rt_tick_t os_tick_from_pm_tick(rt_tick_t pm_tick)
 /* pm_ops timer_get_tick() entry */
 static rt_tick_t pm_timer_get_tick(struct rt_pm *pm)
 {
-    rt_tick_t tick;
-
-    tick = TIMER_GetCounter(PM_TIMER);
+    rt_tick_t tick = TIMER_GetCounter(PM_TIMER);
 
     return os_tick_from_pm_tick(tick);
 }
@@ -304,29 +337,8 @@ static void pm_timer_stop(struct rt_pm *pm)
 int rt_hw_pm_init(void)
 {
     rt_uint8_t timer_mask;
-    uint32_t u32RegRstsrc;
 
-    if ((u32RegRstsrc = CLK_GetPMUWKSrc()) != 0)
-    {
-        /* Release I/O hold status after wake-up from Standby Power-down Mode (SPD) */
-        CLK->IOPDCTL = 1;
-
-        if ((u32RegRstsrc & CLK_PMUSTS_ACMPWK0_Msk) != 0)
-            rt_kprintf("Wake-up source is ACMP.\n");
-        if ((u32RegRstsrc & CLK_PMUSTS_RTCWK_Msk) != 0)
-            rt_kprintf("Wake-up source is RTC.\n");
-        if ((u32RegRstsrc & CLK_PMUSTS_TMRWK_Msk) != 0)
-            rt_kprintf("Wake-up source is Wake-up Timer.\n");
-        if ((u32RegRstsrc & CLK_PMUSTS_GPCWK0_Msk) != 0)
-            rt_kprintf("Wake-up source is GPIO PortC.\n");
-        if ((u32RegRstsrc & CLK_PMUSTS_LVRWK_Msk) != 0)
-            rt_kprintf("Wake-up source is LVR.\n");
-        if ((u32RegRstsrc & CLK_PMUSTS_BODWK_Msk) != 0)
-            rt_kprintf("Wake-up source is BOD.\n");
-
-        /* Clear Power Manager Status register */
-        CLK->PMUSTS = CLK_PMUSTS_CLRWK_Msk;
-    }
+    pm_get_wksrc();
 
     hw_timer_init();
 

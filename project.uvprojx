@@ -7,7 +7,7 @@
 
   <Targets>
     <Target>
-      <TargetName>rtthread-ml231</TargetName>
+      <TargetName>rtthread-m2l31</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
       <pCCUsed>6130001::V6.13.1::.\ARMCLANG</pCCUsed>
@@ -392,6 +392,11 @@
               <FileType>1</FileType>
               <FilePath>applications\mnt.c</FilePath>
             </File>
+            <File>
+              <FileName>pm_test.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>applications\pm_test.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -403,9 +408,9 @@
               <FilePath>board\NuPinConfig\nutool_pincfg.c</FilePath>
             </File>
             <File>
-              <FileName>nutool_modclkcfg.c</FileName>
+              <FileName>board_dev.c</FileName>
               <FileType>1</FileType>
-              <FilePath>board\nutool_modclkcfg.c</FilePath>
+              <FilePath>board\board_dev.c</FilePath>
             </File>
             <File>
               <FileName>custom_loader.c</FileName>
@@ -413,9 +418,9 @@
               <FilePath>board\custom_loader.c</FilePath>
             </File>
             <File>
-              <FileName>board_dev.c</FileName>
+              <FileName>nutool_modclkcfg.c</FileName>
               <FileType>1</FileType>
-              <FilePath>board\board_dev.c</FilePath>
+              <FilePath>board\nutool_modclkcfg.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -546,6 +551,11 @@
               <FileName>pm.c</FileName>
               <FileType>1</FileType>
               <FilePath>rt-thread\components\drivers\pm\pm.c</FilePath>
+            </File>
+            <File>
+              <FileName>alarm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>rt-thread\components\drivers\rtc\alarm.c</FilePath>
             </File>
             <File>
               <FileName>rtc.c</FileName>
@@ -778,11 +788,6 @@
           <GroupName>Fal</GroupName>
           <Files>
             <File>
-              <FileName>fal_partition.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>rt-thread\components\fal\src\fal_partition.c</FilePath>
-            </File>
-            <File>
               <FileName>fal.c</FileName>
               <FileType>1</FileType>
               <FilePath>rt-thread\components\fal\src\fal.c</FilePath>
@@ -796,6 +801,11 @@
               <FileName>fal_rtt.c</FileName>
               <FileType>1</FileType>
               <FilePath>rt-thread\components\fal\src\fal_rtt.c</FilePath>
+            </File>
+            <File>
+              <FileName>fal_partition.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>rt-thread\components\fal\src\fal_partition.c</FilePath>
             </File>
           </Files>
         </Group>
