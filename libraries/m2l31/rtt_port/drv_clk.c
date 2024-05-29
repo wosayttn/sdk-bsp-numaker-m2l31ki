@@ -123,7 +123,7 @@ uint32_t pm_get_wksrc(void)
         /* Release I/O hold status after wake-up from Standby Power-down Mode (SPD) */
         CLK->IOPDCTL = 1;
 
-        rt_kprintf("CLK_PMUSTS:\n", u32RegRstsrc);
+        rt_kprintf("CLK_PMUSTS: 0x%08X\n", u32RegRstsrc);
 
         if ((u32RegRstsrc & CLK_PMUSTS_ACMPWK0_Msk) != 0)
             rt_kprintf("Wake-up source is ACMP.\n");
@@ -159,17 +159,6 @@ static void pm_sleep(struct rt_pm *pm, rt_uint8_t mode)
 
     switch (mode)
     {
-    case PM_SLEEP_MODE_LIGHT:
-        /* Light sleep modes, CPU stops, most clocks and peripherals stop,
-        and time compensation is required after wake-up. */
-        break;
-
-    case PM_SLEEP_MODE_DEEP:
-        /* Deep sleep mode, CPU stops, only a few low power peripheral work,
-           can be awakened by special interrupts */
-        break;
-
-#if defined (NU_CLK_INVOKE_WKTMR)
     case PM_SLEEP_MODE_STANDBY:
     /* Standby mode, CPU stops, device context loss (can be saved to special peripherals),
     usually reset after wake-up */
@@ -178,12 +167,33 @@ static void pm_sleep(struct rt_pm *pm, rt_uint8_t mode)
 
     case PM_SLEEP_MODE_SHUTDOWN:
         /* Shutdown mode, lower power consumption than Standby mode, context is usually irrecoverable, reset after wake-up */
+
+#if defined (NU_CLK_INVOKE_WKTMR)
+
         /* Enable wake-up timer with pre-defined interval if it is invoked */
         CLK_SET_WKTMR_INTERVAL(WKTMR_INTERVAL);
         CLK_ENABLE_WKTMR();
 
-        break;
+#elif defined(BSP_USING_RTC)
+
+        /* Enable RTC wake-up. */
+        CLK_ENABLE_RTCWK();
+
 #endif
+
+    /* FALLTHROUGH */
+
+    case PM_SLEEP_MODE_LIGHT:
+    /* Light sleep modes, CPU stops, most clocks and peripherals stop,
+    and time compensation is required after wake-up. */
+
+    /* FALLTHROUGH */
+
+    case PM_SLEEP_MODE_DEEP:
+        /* Deep sleep mode, CPU stops, only a few low power peripheral work,
+           can be awakened by special interrupts */
+
+        break;
 
     case PM_SLEEP_MODE_IDLE:
         /* The idle mode, which stops CPU and part of the clock when the system is idle.
@@ -194,6 +204,7 @@ static void pm_sleep(struct rt_pm *pm, rt_uint8_t mode)
 
     case PM_SLEEP_MODE_NONE:
     /* The system is active without any power reduction. */
+
     default:
         return;
     }
@@ -372,8 +383,6 @@ void rt_pm_exit_critical(rt_uint32_t ctx, rt_uint8_t sleep_mode)
 
     rt_hw_interrupt_enable(ctx);
 }
-
-MSH_CMD_EXPORT(pm_get_wksrc, Get wake-up source);
 #endif /* BSP_USING_CLK */
 
 

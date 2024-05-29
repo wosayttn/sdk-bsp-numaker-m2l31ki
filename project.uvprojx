@@ -411,13 +411,6 @@
           </Files>
           <Files>
             <File>
-              <FileName>custom_loader.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>board\custom_loader.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
               <FileName>board_dev.c</FileName>
               <FileType>1</FileType>
               <FilePath>board\board_dev.c</FilePath>
@@ -428,6 +421,13 @@
               <FileName>nutool_modclkcfg.c</FileName>
               <FileType>1</FileType>
               <FilePath>board\nutool_modclkcfg.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>custom_loader.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>board\custom_loader.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -577,6 +577,13 @@
               <FileName>workqueue.c</FileName>
               <FileType>1</FileType>
               <FilePath>rt-thread\components\drivers\ipc\workqueue.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>rt-thread\components\drivers\misc\adc.c</FilePath>
             </File>
           </Files>
           <Files>
@@ -923,9 +930,16 @@
           <GroupName>Fal</GroupName>
           <Files>
             <File>
-              <FileName>fal_flash.c</FileName>
+              <FileName>fal.c</FileName>
               <FileType>1</FileType>
-              <FilePath>rt-thread\components\fal\src\fal_flash.c</FilePath>
+              <FilePath>rt-thread\components\fal\src\fal.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>fal_partition.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>rt-thread\components\fal\src\fal_partition.c</FilePath>
             </File>
           </Files>
           <Files>
@@ -937,16 +951,9 @@
           </Files>
           <Files>
             <File>
-              <FileName>fal.c</FileName>
+              <FileName>fal_flash.c</FileName>
               <FileType>1</FileType>
-              <FilePath>rt-thread\components\fal\src\fal.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
-              <FileName>fal_partition.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>rt-thread\components\fal\src\fal_partition.c</FilePath>
+              <FilePath>rt-thread\components\fal\src\fal_flash.c</FilePath>
             </File>
           </Files>
         </Group>

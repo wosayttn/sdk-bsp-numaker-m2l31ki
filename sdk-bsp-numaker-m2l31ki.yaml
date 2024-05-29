@@ -6,13 +6,13 @@ board:
   description_en:
   description_zh:
   emulator_machine: ''
-  large_image: documents/images/large.png
+  large_image: doc/images/large.png
   name: NUMAKER-M2L31KI
   price_cn: 
   price_global: 
   sale_contact_cn: https://www.nuvoton.com
   sale_contact_global: https://www.nuvoton.com
-  small_image: documents/images/small.png
+  small_image: doc/images/small.png
   vendor: Nuvoton
   version: v2.1
 chip:

@@ -70,11 +70,12 @@ static int pm_test_pin(void)
 
     /* Enable interrupt de-bounce function and select de-bounce sampling cycle time is 1024 clocks of LIRC clock */
     GPIO_SET_DEBOUNCE_TIME(PB, GPIO_DBCTL_DBCLKSRC_LIRC, GPIO_DBCTL_DBCLKSEL_1024);
-    GPIO_ENABLE_DEBOUNCE(PB, BIT2);
+    GPIO_ENABLE_DEBOUNCE(PB, BIT2 | BIT3);
 
     return 0;
 }
 INIT_APP_EXPORT(pm_test_pin);
+#endif
 
 #if defined(RT_USING_ALARM)
 
@@ -89,7 +90,7 @@ INIT_APP_EXPORT(pm_test_pin);
 }
 
 static volatile uint32_t bWaitAlarmNotify = 0;
-static void testcase_rt_alarm_cb(rt_alarm_t alarm, time_t timestamp)
+static void rt_alarm_cb(rt_alarm_t alarm, time_t timestamp)
 {
 #if defined(RT_USING_PM)
     /* Request normal mode */
@@ -103,55 +104,69 @@ static void testcase_rt_alarm_cb(rt_alarm_t alarm, time_t timestamp)
 
 static int pm_test_rtc_alarm(void)
 {
-    struct rt_rtc_wkalarm wkalarm;
-    struct rt_alarm_setup alarm_setup;
-    struct rt_alarm *alarm;
-    rt_device_t rtc_dev;
+    struct rt_rtc_wkalarm wkalarm;          /* Define RTC wake-up alarm structure */
+    struct rt_alarm_setup alarm_setup;      /* Define alarm setup structure */
+    struct rt_alarm *alarm;                 /* Define alarm pointer */
+    rt_device_t rtc_dev;                    /* Define RTC device pointer */
 
-    struct tm tm;
-    time_t tw = 0;
+    struct tm tm;                           /* Define time structure */
+    time_t tw = 0;                          /* Define time variable */
 
+    /* Find the RTC device */
     if ((rtc_dev = rt_device_find("rtc")) == RT_NULL)
     {
-        rt_kprintf("Can't find rtc device!\n");
-        goto exit_pm_test_rtc_alarm;
+        rt_kprintf("Can't find rtc device!\n");  /* Print error message if RTC device is not found */
+        goto exit_pm_test_rtc_alarm;             /* Jump to error handling section */
     }
 
+    /* Clear the alarm_setup.wktime structure and set it to current time */
     rt_memset(&alarm_setup.wktime, RT_ALARM_TM_NOW, sizeof(struct tm));
 
-    ENCODE_TM(tm, 2024, 5, 28, 15, 15, 0); // Set now date/time
-    ENCODE_TM(alarm_setup.wktime, 2024, 5, 28, 15, 15, 10);  // Set wake up date/time
+    /* Set the current date and time (2024-05-28 15:15:00) */
+    ENCODE_TM(tm, 2024, 5, 28, 15, 15, 0);
 
+    /* Set the wake-up date and time (2024-05-28 15:15:10) */
+    ENCODE_TM(alarm_setup.wktime, 2024, 5, 28, 15, 15, 10);
+
+    /* Convert the time to time_t format */
     tw = timegm(&tm);
+
+    /* Set the RTC device time */
     rt_device_control(rtc_dev, RT_DEVICE_CTRL_RTC_SET_TIME, &tw);
 
+    /* Set the alarm as one-shot */
     alarm_setup.flag = RT_ALARM_ONESHOT;
 
-    alarm = rt_alarm_create(testcase_rt_alarm_cb, &alarm_setup);
+    /* Create the alarm */
+    alarm = rt_alarm_create(rt_alarm_cb, &alarm_setup);
 
+    /* Initialize the alarm notification flag */
     bWaitAlarmNotify = 0;
 
+    /* Start the alarm and check if it is successful */
     if (alarm && (rt_alarm_start(alarm) == RT_EOK))
     {
         rt_kprintf("Sleep 10 seconds for waiting alarm occurred.\n");
 
 #if defined(RT_USING_PM)
-        rt_uint8_t mode = PM_SLEEP_MODE_DEEP;
-        rt_pm_request(mode);
+        rt_uint8_t mode = PM_SLEEP_MODE_STANDBY; /* Define power management mode as standby mode */
+        //rt_uint8_t mode = PM_SLEEP_MODE_DEEP;  /* Define power management mode as deep sleep mode */
+        rt_pm_request(mode);                     /* Request to enter the specified sleep mode */
 
-        /* Release all boxes */
+        /* Release all power management resources */
         for (int i = (mode - 1); i >= 0; i--)
             rt_pm_release_all(i);
 
-        /* Enter idle task to do pm_sleep. */
+        /* Enter idle task to perform pm_sleep */
         rt_thread_mdelay(10);
 
-        /* Now, system enter Deep mode and wait-up from RTC alarm. */
+        /* Now, the system enters deep mode and wakes up from RTC alarm */
 #endif
 
-        /* Wait notification from alarm callback. */
+        /* Wait for notification from the alarm callback */
         while (!bWaitAlarmNotify);
 
+        /* Stop and delete the alarm */
         rt_alarm_stop(alarm);
         rt_alarm_delete(alarm);
     }
@@ -159,11 +174,10 @@ static int pm_test_rtc_alarm(void)
     return 0;
 
 exit_pm_test_rtc_alarm:
-
-    return -1;
+    return -1;  /* Error handling section, return -1 to indicate failure */
 }
-MSH_CMD_EXPORT(pm_test_rtc_alarm, Test RTC alarm with deep - sleep mode);
+
+MSH_CMD_EXPORT(pm_test_rtc_alarm, test rtc alarm);
 #endif
 
-#endif
 

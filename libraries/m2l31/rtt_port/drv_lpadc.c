@@ -16,6 +16,8 @@
 #include <rtdevice.h>
 #include "NuMicro.h"
 
+#define CONFIG_MAX_CHN_NUM  24
+
 /* Private define ---------------------------------------------------------------*/
 enum
 {
@@ -39,10 +41,10 @@ typedef struct nu_lpadc *nu_lpadc_t;
 
 /* Private functions ------------------------------------------------------------*/
 static rt_err_t nu_lpadc_enabled(struct rt_adc_device *device, rt_uint32_t channel, rt_bool_t enabled);
-static rt_err_t nu_get_lpadc_value(struct rt_adc_device *device, rt_uint32_t channel, rt_uint32_t *value);
-static rt_err_t nu_get_lpadc_value(struct rt_adc_device *device, rt_uint32_t channel, rt_uint32_t *value);
-
-/* Public functions ------------------------------------------------------------*/
+static rt_err_t nu_lpadc_convert(struct rt_adc_device *device, rt_uint32_t channel, rt_uint32_t *value);
+static rt_uint8_t nu_lpadc_get_resolution(struct rt_adc_device *device);
+static rt_int16_t nu_lpadc_get_vref(struct rt_adc_device *device);
+static rt_err_t nu_lpadc_control(rt_device_t device, int cmd, void *args);
 
 /* Private variables ------------------------------------------------------------*/
 
@@ -53,18 +55,56 @@ static struct nu_lpadc nu_lpadc_arr [] =
         .name = "lpadc0",
         .base = LPADC0,
         .chn_msk = 0,
-        .max_chn_num = 24,
+        .max_chn_num = CONFIG_MAX_CHN_NUM,
     },
 #endif
 };
 
 static const struct rt_adc_ops nu_lpadc_ops =
 {
-    nu_lpadc_enabled,
-    nu_get_lpadc_value,
+    .enabled = nu_lpadc_enabled,
+    .convert = nu_lpadc_convert,
+    .get_resolution = nu_lpadc_get_resolution,
+    .get_vref = nu_lpadc_get_vref,
+    .control = nu_lpadc_control
 };
 typedef struct rt_adc_ops *rt_adc_ops_t;
 
+static rt_uint8_t nu_lpadc_get_resolution(struct rt_adc_device *device)
+{
+    return 12; /* 12-bit */
+}
+
+static rt_int16_t nu_lpadc_get_vref(struct rt_adc_device *device)
+{
+    rt_uint32_t u32VRefMsk = SYS->VREFCTL & SYS_VREFCTL_VREFCTL_Msk;
+    rt_uint16_t u16Vref;
+
+    switch (u32VRefMsk)
+    {
+    case SYS_VREFCTL_VREF_1_6V:
+        u16Vref = 1600;
+        break;
+
+    case SYS_VREFCTL_VREF_2_0V:
+        u16Vref = 2000;
+        break;
+
+    case SYS_VREFCTL_VREF_2_5V:
+        u16Vref = 2500;
+        break;
+
+    case SYS_VREFCTL_VREF_PIN:
+    /* FALLTHROUGH */
+    case SYS_VREFCTL_VREF_3_0V:
+    /* FALLTHROUGH */
+    default:
+        u16Vref = 3000;
+        break;
+    }
+
+    return u16Vref;
+}
 
 /* nu_lpadc_enabled - Enable ADC clock and wait for ready */
 static rt_err_t nu_lpadc_enabled(struct rt_adc_device *device, rt_uint32_t channel, rt_bool_t enabled)
@@ -107,7 +147,7 @@ static rt_err_t nu_lpadc_enabled(struct rt_adc_device *device, rt_uint32_t chann
     return RT_EOK;
 }
 
-static rt_err_t nu_get_lpadc_value(struct rt_adc_device *device, rt_uint32_t channel, rt_uint32_t *value)
+static rt_err_t nu_lpadc_convert(struct rt_adc_device *device, rt_uint32_t channel, rt_uint32_t *value)
 {
     nu_lpadc_t psNuLPADC = (nu_lpadc_t)device;
     rt_err_t ret = RT_ERROR;
@@ -119,14 +159,14 @@ static rt_err_t nu_get_lpadc_value(struct rt_adc_device *device, rt_uint32_t cha
     {
         *value = 0xFFFFFFFF;
         ret = RT_EINVAL;
-        goto exit_nu_get_lpadc_value;
+        goto exit_nu_lpadc_convert;
     }
 
     if ((psNuLPADC->chn_msk & (1 << channel)) == 0)
     {
         *value = 0xFFFFFFFF;
         ret = RT_EBUSY;
-        goto exit_nu_get_lpadc_value;
+        goto exit_nu_lpadc_convert;
     }
 
     /* Clear the A/D interrupt flag for safe */
@@ -149,12 +189,27 @@ static rt_err_t nu_get_lpadc_value(struct rt_adc_device *device, rt_uint32_t cha
 
     ret = RT_EOK;
 
-exit_nu_get_lpadc_value:
+exit_nu_lpadc_convert:
 
     return -(ret);
 }
 
-static int rt_hw_lpadc_init(void)
+static rt_err_t nu_lpadc_control(rt_device_t device, int cmd, void *args)
+{
+    nu_lpadc_t psNuLPADC = (nu_lpadc_t)device;
+
+    RT_ASSERT(device);
+
+    switch (cmd)
+    {
+    default:
+        break;
+    }
+
+    return -RT_EINVAL;
+}
+
+int rt_hw_lpadc_init(void)
 {
     int i;
     rt_err_t result;
