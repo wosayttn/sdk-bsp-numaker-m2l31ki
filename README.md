@@ -7,7 +7,7 @@ The NuMicro M2L31 series is based on Arm Cortex-M23 core at Armv8-M architecture
 ReRAM (Resistive Random-Access Memory) is a type of non-volatile memory that achieves digital data storage by altering the resistance state of its components through the application of an external voltage. It boasts three major characteristics: fast read/write speeds, low power consumption, and superior durability, making it hailed as the next-generation embedded universal memory. Unlike embedded flash memory, ReRAM doesn't require an page erase operation before writing, resulting in faster write speeds and a more straightforward and speedy operation similar to EEPROM. Furthermore, ReRAM consumes less energy for storing each bit compared to what is needed in flash memory. Additionally, because each storage unit can be individually set or reset, it offers greater endurance than flash memory.
 
 <p align="center">
-<img src="./figures/Nuvoton-NuMaker-M2L31KI V2.1-Side.png" alt="fishy" class="bg-primary">
+<img src="./doc/images/side.png" width="400" alt="fishy" class="bg-primary">
 </p>
 
 ### 1.1 MCU specification
