@@ -45,6 +45,75 @@ static void nu_btn0_event_cb(void *args)
 }
 
 #if defined(RT_USING_PM)
+
+void pm_sleep_before(rt_uint8_t mode)
+{
+    switch (mode)
+    {
+    case PM_SLEEP_MODE_STANDBY:
+    /* FALLTHROUGH */
+    case PM_SLEEP_MODE_SHUTDOWN:
+        rt_kprintf("ZzZzZ\n");
+        break;
+
+    default:
+        return;
+    }
+}
+
+void pm_get_wksrc(void)
+{
+    uint32_t u32RegRstsrc;
+
+    if ((u32RegRstsrc = CLK_GetPMUWKSrc()) != 0)
+    {
+        /* Release I/O hold status after wake-up from Standby Power-down Mode (SPD) */
+        CLK->IOPDCTL = 1;
+
+        rt_kprintf("CLK_PMUSTS: 0x%08X\n", u32RegRstsrc);
+
+        if ((u32RegRstsrc & CLK_PMUSTS_ACMPWK0_Msk) != 0)
+            rt_kprintf("Wake-up source is ACMP.\n");
+        if ((u32RegRstsrc & CLK_PMUSTS_RTCWK_Msk) != 0)
+            rt_kprintf("Wake-up source is RTC.\n");
+        if ((u32RegRstsrc & CLK_PMUSTS_TMRWK_Msk) != 0)
+            rt_kprintf("Wake-up source is Wake-up Timer.\n");
+        if ((u32RegRstsrc & CLK_PMUSTS_GPCWK0_Msk) != 0)
+            rt_kprintf("Wake-up source is GPIO PortC.\n");
+        if ((u32RegRstsrc & CLK_PMUSTS_LVRWK_Msk) != 0)
+            rt_kprintf("Wake-up source is LVR.\n");
+        if ((u32RegRstsrc & CLK_PMUSTS_BODWK_Msk) != 0)
+            rt_kprintf("Wake-up source is BOD.\n");
+
+        /* Clear Power Manager Status register */
+        CLK->PMUSTS = CLK_PMUSTS_CLRWK_Msk;
+    }
+}
+
+void pm_set_wksrc(rt_uint8_t mode)
+{
+    switch (mode)
+    {
+    case PM_SLEEP_MODE_STANDBY:
+    /* FALLTHROUGH */
+    case PM_SLEEP_MODE_SHUTDOWN:
+        /* Enable RTC wake-up. */
+        CLK_ENABLE_RTCWK();
+
+        /* Configure GPIO as input mode */
+        //GPIO_SetMode(PA, BIT13, GPIO_MODE_INPUT);
+        GPIO_SetMode(PC, BIT0, GPIO_MODE_INPUT);
+
+        /* GPIO SPD Power-down Wake-up Pin Select */
+        //CLK_EnableSPDWKPin(0, 13, CLK_SPDWKPIN_RISING, CLK_SPDWKPIN_DEBOUNCEDIS);
+        CLK_EnableSPDWKPin(2, 0, CLK_SPDWKPIN_RISING, CLK_SPDWKPIN_DEBOUNCEDIS);
+
+        break;
+    default:
+        return;
+    }
+}
+
 static int pm_cko_init(void)
 {
     rt_kprintf("Enable CLK0 function to observe HCLK/4 waveform.\n");

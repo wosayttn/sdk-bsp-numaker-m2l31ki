@@ -114,7 +114,7 @@ const static uint32_t g_au32SleepingMode[PM_SLEEP_MODE_MAX] =
     CONFIG_MODE_SHUTDOWN
 };
 
-uint32_t pm_get_wksrc(void)
+RT_WEAK void pm_get_wksrc(void)
 {
     uint32_t u32RegRstsrc;
 
@@ -125,24 +125,37 @@ uint32_t pm_get_wksrc(void)
 
         rt_kprintf("CLK_PMUSTS: 0x%08X\n", u32RegRstsrc);
 
-        if ((u32RegRstsrc & CLK_PMUSTS_ACMPWK0_Msk) != 0)
-            rt_kprintf("Wake-up source is ACMP.\n");
-        if ((u32RegRstsrc & CLK_PMUSTS_RTCWK_Msk) != 0)
-            rt_kprintf("Wake-up source is RTC.\n");
-        if ((u32RegRstsrc & CLK_PMUSTS_TMRWK_Msk) != 0)
-            rt_kprintf("Wake-up source is Wake-up Timer.\n");
-        if ((u32RegRstsrc & CLK_PMUSTS_GPCWK0_Msk) != 0)
-            rt_kprintf("Wake-up source is GPIO PortC.\n");
-        if ((u32RegRstsrc & CLK_PMUSTS_LVRWK_Msk) != 0)
-            rt_kprintf("Wake-up source is LVR.\n");
-        if ((u32RegRstsrc & CLK_PMUSTS_BODWK_Msk) != 0)
-            rt_kprintf("Wake-up source is BOD.\n");
-
         /* Clear Power Manager Status register */
         CLK->PMUSTS = CLK_PMUSTS_CLRWK_Msk;
     }
+}
 
-    return u32RegRstsrc;
+RT_WEAK void pm_set_wksrc(rt_uint8_t mode)
+{
+    switch (mode)
+    {
+    case PM_SLEEP_MODE_STANDBY:
+    /* FALLTHROUGH */
+    case PM_SLEEP_MODE_SHUTDOWN:
+#if defined (NU_CLK_INVOKE_WKTMR)
+        /* Enable wake-up timer with pre-defined interval if it is invoked */
+        CLK_SET_WKTMR_INTERVAL(WKTMR_INTERVAL);
+        CLK_ENABLE_WKTMR();
+#elif defined(BSP_USING_RTC)
+        /* Enable RTC wake-up. */
+        CLK_ENABLE_RTCWK();
+#endif
+    default:
+        return;
+    }
+}
+
+RT_WEAK void pm_sleep_before(rt_uint8_t mode)
+{
+}
+
+RT_WEAK void pm_sleep_after(rt_uint8_t mode)
+{
 }
 
 /* pm sleep() entry */
@@ -166,38 +179,24 @@ static void pm_sleep(struct rt_pm *pm, rt_uint8_t mode)
     /* FALLTHROUGH */
 
     case PM_SLEEP_MODE_SHUTDOWN:
-        /* Shutdown mode, lower power consumption than Standby mode, context is usually irrecoverable, reset after wake-up */
-
-#if defined (NU_CLK_INVOKE_WKTMR)
-
-        /* Enable wake-up timer with pre-defined interval if it is invoked */
-        CLK_SET_WKTMR_INTERVAL(WKTMR_INTERVAL);
-        CLK_ENABLE_WKTMR();
-
-#elif defined(BSP_USING_RTC)
-
-        /* Enable RTC wake-up. */
-        CLK_ENABLE_RTCWK();
-
-#endif
+    /* Shutdown mode, lower power consumption than Standby mode, context is usually irrecoverable, reset after wake-up */
 
     /* FALLTHROUGH */
 
     case PM_SLEEP_MODE_LIGHT:
-    /* Light sleep modes, CPU stops, most clocks and peripherals stop,
-    and time compensation is required after wake-up. */
+    /* Light sleep modes, CPU stops, most clocks and peripherals stop, and time compensation is required after wake-up. */
 
     /* FALLTHROUGH */
 
     case PM_SLEEP_MODE_DEEP:
-        /* Deep sleep mode, CPU stops, only a few low power peripheral work,
-           can be awakened by special interrupts */
+        /* Deep sleep mode, CPU stops, only a few low power peripheral work, can be awakened by special interrupts */
+
+        pm_set_wksrc(mode);
 
         break;
 
     case PM_SLEEP_MODE_IDLE:
-        /* The idle mode, which stops CPU and part of the clock when the system is idle.
-           Any event or interrupt can wake up system. */
+        /* The idle mode, which stops CPU and part of the clock when the system is idle. Any event or interrupt can wake up system. */
         CLK_Idle();
 
     /* FALLTHROUGH */
@@ -209,6 +208,9 @@ static void pm_sleep(struct rt_pm *pm, rt_uint8_t mode)
         return;
     }
 
+    /* Do something before sleeping. */
+    pm_sleep_before(mode);
+
     /* Flush TX FIFO of default console UART. */
     if (rt_console_get_device())
         rt_device_control(rt_console_get_device(), 9527, 0);
@@ -218,6 +220,9 @@ static void pm_sleep(struct rt_pm *pm, rt_uint8_t mode)
 
     /* Here, take a break. */
     CLK_PowerDown();
+
+    /* Do something after wakeup. */
+    pm_sleep_after(mode);
 }
 
 /* pm run() entry */

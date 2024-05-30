@@ -411,13 +411,6 @@
           </Files>
           <Files>
             <File>
-              <FileName>board_dev.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>board\board_dev.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
               <FileName>nutool_modclkcfg.c</FileName>
               <FileType>1</FileType>
               <FilePath>board\nutool_modclkcfg.c</FilePath>
@@ -428,6 +421,13 @@
               <FileName>custom_loader.c</FileName>
               <FileType>1</FileType>
               <FilePath>board\custom_loader.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
+              <FileName>board_dev.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>board\board_dev.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -930,6 +930,13 @@
           <GroupName>Fal</GroupName>
           <Files>
             <File>
+              <FileName>fal_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>rt-thread\components\fal\src\fal_flash.c</FilePath>
+            </File>
+          </Files>
+          <Files>
+            <File>
               <FileName>fal.c</FileName>
               <FileType>1</FileType>
               <FilePath>rt-thread\components\fal\src\fal.c</FilePath>
@@ -947,13 +954,6 @@
               <FileName>fal_rtt.c</FileName>
               <FileType>1</FileType>
               <FilePath>rt-thread\components\fal\src\fal_rtt.c</FilePath>
-            </File>
-          </Files>
-          <Files>
-            <File>
-              <FileName>fal_flash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>rt-thread\components\fal\src\fal_flash.c</FilePath>
             </File>
           </Files>
         </Group>
