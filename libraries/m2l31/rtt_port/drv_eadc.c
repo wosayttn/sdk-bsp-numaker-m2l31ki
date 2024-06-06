@@ -73,40 +73,84 @@ static const struct rt_adc_ops nu_adc_ops =
 };
 typedef struct rt_adc_ops *rt_adc_ops_t;
 
+static rt_uint32_t s_u32BuiltInBandGapValue = 0;
+
 static rt_uint8_t nu_eadc_get_resolution(struct rt_adc_device *device)
 {
     return 12; /* 12-bit */
 }
 
-static rt_int16_t nu_eadc_get_vref(struct rt_adc_device *device)
+static rt_uint32_t _eadc_convert(nu_eadc_t psNuEADC, rt_uint32_t channel)
 {
-    rt_uint32_t u32VRefMsk = SYS->VREFCTL & SYS_VREFCTL_VREFCTL_Msk;
-    rt_uint16_t u16Vref;
+#define CONFIG_CONV_INTSEL             0
+#define CONFIG_EXT_SMPL_TIME           0xf
+#define CONFIG_SMPL_MODULE_ACU_TIMES   (psNuEADC->conv_power << EADC_MCTL1_ACU_Pos)
 
-    switch (u32VRefMsk)
+    rt_uint32_t u32ConvValue, u32ModuleNum;
+
+    if (psNuEADC->chn_msk == 0)
     {
-    case SYS_VREFCTL_VREF_1_6V:
-        u16Vref = 1600;
-        break;
-
-    case SYS_VREFCTL_VREF_2_0V:
-        u16Vref = 2000;
-        break;
-
-    case SYS_VREFCTL_VREF_2_5V:
-        u16Vref = 2500;
-        break;
-
-    case SYS_VREFCTL_VREF_PIN:
-    /* FALLTHROUGH */
-    case SYS_VREFCTL_VREF_3_0V:
-    /* FALLTHROUGH */
-    default:
-        u16Vref = 3000;
-        break;
+        EADC_Open(psNuEADC->base, EADC_CTL_DIFFEN_SINGLE_END);
     }
 
-    return u16Vref;
+    u32ModuleNum = channel;
+
+    /* Configure the sample module for analog input channel and software trigger source. */
+    EADC_ConfigSampleModule(psNuEADC->base, u32ModuleNum, EADC_SOFTWARE_TRIGGER, channel);
+
+    /* Set sample module external sampling time to 0xF */
+    EADC_SetExtendSampleTime(psNuEADC->base, u32ModuleNum, CONFIG_EXT_SMPL_TIME);
+
+    /* Enable Accumulate feature */
+    EADC_ENABLE_ACU(psNuEADC->base, u32ModuleNum, CONFIG_SMPL_MODULE_ACU_TIMES);
+
+    /* Enable Average feature */
+    EADC_ENABLE_AVG(psNuEADC->base, u32ModuleNum);
+
+    /* Clear the A/D ADINT0 interrupt flag for safe */
+    EADC_CLR_INT_FLAG(psNuEADC->base, EADC_STATUS2_ADIF0_Msk);
+
+    /* Enable the sample module interrupt. */
+    EADC_ENABLE_INT(psNuEADC->base, (1 << CONFIG_CONV_INTSEL));
+    EADC_ENABLE_SAMPLE_MODULE_INT(psNuEADC->base, CONFIG_CONV_INTSEL, (1 << u32ModuleNum));
+
+    EADC_START_CONV(psNuEADC->base, (1 << u32ModuleNum));
+    while (EADC_GET_INT_FLAG(psNuEADC->base, (1 << CONFIG_CONV_INTSEL)) == 0);
+
+    /* Disable the sample module interrupt. */
+    EADC_DISABLE_INT(psNuEADC->base, (1 << CONFIG_CONV_INTSEL));
+
+    /* Disable Average feature */
+    EADC_DISABLE_AVG(psNuEADC->base, u32ModuleNum);
+
+    /* Disable Accumulate feature */
+    EADC_DISABLE_ACU(psNuEADC->base, u32ModuleNum);
+
+    u32ConvValue = EADC_GET_CONV_DATA(psNuEADC->base, u32ModuleNum);
+
+    if (psNuEADC->chn_msk == 0)
+    {
+        EADC_Close(psNuEADC->base);
+    }
+
+    return u32ConvValue;
+}
+
+static rt_int16_t nu_eadc_get_vref(struct rt_adc_device *device)
+{
+    rt_uint32_t u32VBG;
+
+    RT_ASSERT(device);
+
+    u32VBG = _eadc_convert((nu_eadc_t)device, 28); // VBG Channel
+
+    /* Use Conversion result of Band-gap to calculating AVdd */
+    /*
+      u16Vref    s_u32BuiltInBandGapValue
+    ---------- = -------------------------
+       3072          i32ConversionData
+    */
+    return (3072 * s_u32BuiltInBandGapValue / u32VBG);
 }
 
 /* nu_adc_enabled - Enable ADC clock and wait for ready */
@@ -143,9 +187,6 @@ static rt_err_t nu_eadc_enabled(struct rt_adc_device *device, rt_uint32_t channe
 
 static rt_err_t nu_eadc_convert(struct rt_adc_device *device, rt_uint32_t channel, rt_uint32_t *value)
 {
-#define CONFIG_SMPL_MODULE_IDX         0
-#define CONFIG_SMPL_MODULE_ACU_TIMES   (psNuEADC->conv_power << EADC_MCTL1_ACU_Pos)
-
     nu_eadc_t psNuEADC = (nu_eadc_t)device;
     rt_err_t ret = RT_ERROR;
 
@@ -166,38 +207,7 @@ static rt_err_t nu_eadc_convert(struct rt_adc_device *device, rt_uint32_t channe
         goto exit_nu_eadc_convert;
     }
 
-    /* Configure the sample module for analog input channel and software trigger source. */
-    EADC_ConfigSampleModule(psNuEADC->base, CONFIG_SMPL_MODULE_IDX, EADC_SOFTWARE_TRIGGER, channel);
-
-    /* Set sample module external sampling time to 0 */
-    EADC_SetExtendSampleTime(psNuEADC->base, CONFIG_SMPL_MODULE_IDX, 0);
-
-    /* Enable Accumulate feature */
-    EADC_ENABLE_ACU(psNuEADC->base, CONFIG_SMPL_MODULE_IDX, CONFIG_SMPL_MODULE_ACU_TIMES);
-
-    /* Enable Average feature */
-    EADC_ENABLE_AVG(psNuEADC->base, CONFIG_SMPL_MODULE_IDX);
-
-    /* Clear the A/D ADINT0 interrupt flag for safe */
-    EADC_CLR_INT_FLAG(psNuEADC->base, EADC_STATUS2_ADIF0_Msk);
-
-    /* Enable the sample module interrupt. */
-    EADC_ENABLE_INT(psNuEADC->base, BIT0);
-    EADC_ENABLE_SAMPLE_MODULE_INT(psNuEADC->base, CONFIG_SMPL_MODULE_IDX, BIT0);
-
-    EADC_START_CONV(psNuEADC->base, BIT0);
-    while (EADC_GET_INT_FLAG(psNuEADC->base, BIT0) == 0);
-
-    /* Disable the sample module interrupt. */
-    EADC_DISABLE_INT(psNuEADC->base, BIT0);
-
-    /* Disable Average feature */
-    EADC_DISABLE_AVG(psNuEADC->base, CONFIG_SMPL_MODULE_IDX);
-
-    /* Disable Accumulate feature */
-    EADC_DISABLE_ACU(psNuEADC->base, CONFIG_SMPL_MODULE_IDX);
-
-    *value = EADC_GET_CONV_DATA(psNuEADC->base, CONFIG_SMPL_MODULE_IDX);
+    *value = _eadc_convert(psNuEADC, channel);
 
     ret = RT_EOK;
 
@@ -238,6 +248,12 @@ int rt_hw_eadc_init(void)
 {
     int i;
     rt_err_t result;
+
+    /* Invoke ISP function to read built-in band-gap A/D conversion result*/
+    SYS_UnlockReg();
+    RMC_Open();
+    s_u32BuiltInBandGapValue = RMC_ReadBandGap();
+    RMC_Close();
 
     for (i = (EADC_START + 1); i < EADC_CNT; i++)
     {

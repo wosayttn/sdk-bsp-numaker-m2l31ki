@@ -498,6 +498,24 @@ __STATIC_INLINE int32_t RMC_SetVectorPageAddr(uint32_t u32PageAddr)
     return -1;
 }
 
+/**
+  * @brief      Read Built-in Band-Gap conversion value
+  * @param[in]  None
+  * @return     Built-in Band-Gap conversion value
+  * @details    This function is used to read Band-Gap conversion value.
+  */
+__STATIC_INLINE uint32_t RMC_ReadBandGap(void)
+{
+    RMC->ISPCMD = RMC_ISPCMD_READ_UID;      /* Set ISP Command Code */
+    RMC->ISPADDR = 0x70u;                   /* Must keep 0x70 when read Band-Gap */
+    RMC->ISPTRG = RMC_ISPTRG_ISPGO_Msk;     /* Trigger to start ISP procedure */
+#if ISBEN
+    __ISB();
+#endif                                              /* To make sure ISP/CPU be Synchronized */
+    while(RMC->ISPTRG & RMC_ISPTRG_ISPGO_Msk) {}    /* Waiting for ISP Done */
+
+    return RMC->ISPDAT & 0xFFF;
+}
 
 /*---------------------------------------------------------------------------------------------------------*/
 /*  Functions                                                                                              */

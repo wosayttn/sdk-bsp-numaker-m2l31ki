@@ -1041,8 +1041,6 @@ void nutool_modclkcfg_init(void)
     nutool_modclkcfg_init_dac();
 #endif
 #if defined(BSP_USING_EADC)
-    /* Vref connect to internal */
-    SYS_SetVRef(SYS_VREFCTL_VREF_3_0V);
     nutool_modclkcfg_init_eadc();
 #endif
 #if defined(BSP_USING_EBI)

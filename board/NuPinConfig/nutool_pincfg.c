@@ -87,6 +87,9 @@ void nutool_pincfg_init_usb(void)
 
 void nutool_pincfg_init(void)
 {
+    /* Vref connect to internal */
+    SYS_SetVRef(SYS_VREFCTL_VREF_3_0V);
+	
 #if defined(BSP_USING_UART0)
     nutool_pincfg_init_uart0();
 #endif

@@ -16,7 +16,7 @@
 #include <rtdevice.h>
 #include "NuMicro.h"
 
-#define CONFIG_MAX_CHN_NUM  24
+#define CONFIG_MAX_CHN_NUM  32
 
 /* Private define ---------------------------------------------------------------*/
 enum
@@ -70,40 +70,60 @@ static const struct rt_adc_ops nu_lpadc_ops =
 };
 typedef struct rt_adc_ops *rt_adc_ops_t;
 
+static rt_uint32_t s_u32BuiltInBandGapValue = 0;
+
 static rt_uint8_t nu_lpadc_get_resolution(struct rt_adc_device *device)
 {
     return 12; /* 12-bit */
 }
 
+static rt_uint32_t _lpadc_convert(nu_lpadc_t psNuLPADC, rt_uint32_t channel)
+{
+#define CONFIG_EXT_SMPL_TIME           20
+
+    /* Clear the A/D interrupt flag for safe */
+    LPADC_CLR_INT_FLAG(psNuLPADC->base, LPADC_ADF_INT);
+
+    /* Set sample module extended sampling time. */
+    LPADC_SetExtendSampleTime(psNuLPADC->base, 0, CONFIG_EXT_SMPL_TIME);
+
+    /* Enable the sample module interrupt */
+    LPADC_EnableInt(psNuLPADC->base, LPADC_ADF_INT);
+
+    /* Trigger to start A/D conversion */
+    LPADC_START_CONV(psNuLPADC->base);
+
+    /* Polling the ADF flag. */
+    while (LPADC_GET_INT_FLAG(psNuLPADC->base, LPADC_ADF_INT) == 0);
+
+    /* Disable the sample module interrupt */
+    LPADC_DisableInt(psNuLPADC->base, LPADC_ADF_INT);
+
+    /* Get the conversion result. */
+    return LPADC_GET_CONVERSION_DATA(psNuLPADC->base, channel);
+}
+
 static rt_int16_t nu_lpadc_get_vref(struct rt_adc_device *device)
 {
-    rt_uint32_t u32VRefMsk = SYS->VREFCTL & SYS_VREFCTL_VREFCTL_Msk;
-    rt_uint16_t u16Vref;
+    nu_lpadc_t psNuLPADC = (nu_lpadc_t)device;
+    rt_uint16_t u32VBG;
 
-    switch (u32VRefMsk)
-    {
-    case SYS_VREFCTL_VREF_1_6V:
-        u16Vref = 1600;
-        break;
+    /* Force to enable internal voltage band-gap. */
+    SYS_UnlockReg();
 
-    case SYS_VREFCTL_VREF_2_0V:
-        u16Vref = 2000;
-        break;
+    SYS->VREFCTL |= SYS_VREFCTL_VBGFEN_Msk;
+    nu_lpadc_enabled(device, 29, RT_TRUE);
+    u32VBG = _lpadc_convert(psNuLPADC, 29);
+    nu_lpadc_enabled(device, 29, RT_FALSE);
+    SYS->VREFCTL &= ~SYS_VREFCTL_VBGFEN_Msk;
 
-    case SYS_VREFCTL_VREF_2_5V:
-        u16Vref = 2500;
-        break;
-
-    case SYS_VREFCTL_VREF_PIN:
-    /* FALLTHROUGH */
-    case SYS_VREFCTL_VREF_3_0V:
-    /* FALLTHROUGH */
-    default:
-        u16Vref = 3000;
-        break;
-    }
-
-    return u16Vref;
+    /* Use Conversion result of Band-gap to calculating AVdd */
+    /*
+      u16Vref    s_u32BuiltInBandGapValue
+    ---------- = -------------------------
+       3072          i32ConversionData
+    */
+    return (3072 * s_u32BuiltInBandGapValue / u32VBG);
 }
 
 /* nu_lpadc_enabled - Enable ADC clock and wait for ready */
@@ -169,23 +189,8 @@ static rt_err_t nu_lpadc_convert(struct rt_adc_device *device, rt_uint32_t chann
         goto exit_nu_lpadc_convert;
     }
 
-    /* Clear the A/D interrupt flag for safe */
-    LPADC_CLR_INT_FLAG(psNuLPADC->base, LPADC_ADF_INT);
-
-    /* Enable the sample module interrupt */
-    LPADC_EnableInt(psNuLPADC->base, LPADC_ADF_INT);
-
-    /* Trigger to start A/D conversion */
-    LPADC_START_CONV(psNuLPADC->base);
-
-    /* Polling the ADF flag. */
-    while (LPADC_GET_INT_FLAG(psNuLPADC->base, LPADC_ADF_INT) == 0);
-
-    /* Disable the sample module interrupt */
-    LPADC_DisableInt(psNuLPADC->base, LPADC_ADF_INT);
-
     /* Get the conversion result. */
-    *value = LPADC_GET_CONVERSION_DATA(psNuLPADC->base, channel);
+    *value = _lpadc_convert(psNuLPADC, channel);
 
     ret = RT_EOK;
 
@@ -213,6 +218,12 @@ int rt_hw_lpadc_init(void)
 {
     int i;
     rt_err_t result;
+
+    /* Invoke ISP function to read built-in band-gap A/D conversion result*/
+    SYS_UnlockReg();
+    RMC_Open();
+    s_u32BuiltInBandGapValue = RMC_ReadBandGap();
+    RMC_Close();
 
     for (i = (LPADC_START + 1); i < LPADC_CNT; i++)
     {
