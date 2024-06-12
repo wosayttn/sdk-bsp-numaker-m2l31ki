@@ -290,6 +290,19 @@ extern "C"
  */
 #define LPPDMA_PAUSE(lppdma,u32Ch) ((uint32_t)(lppdma->PAUSE = (1UL << (u32Ch))))
 
+/**
+ * @brief       Reset the channel
+ *
+ * @param[in]   lppdma    The pointer of the specified LPPDMA module
+ * @param[in]   u32Ch     The selected channel
+ *
+ * @return      None
+ *
+ * @details     This macro reset the selected channel.
+ * \hideinitializer 
+ */
+#define LPPDMA_RESET(lppdma, u32Ch) ((uint32_t)((lppdma)->CHRST = (1UL << (u32Ch))))
+
 /*---------------------------------------------------------------------------------------------------------*/
 /* Define PDMA functions prototype                                                                          */
 /*---------------------------------------------------------------------------------------------------------*/

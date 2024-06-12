@@ -9,6 +9,33 @@ config SOC_SERIES_M2L31
     select RT_USING_USER_MAIN
     default y
 
+
+    menuconfig BSP_USING_ADC
+        bool "Enable Analog-to-Digital Converter(ADC)"
+
+    if BSP_USING_ADC
+        config BSP_USING_EADC0
+            bool
+
+        config BSP_USING_LPADC0
+            bool
+
+        choice
+            prompt "Choice an ADC selection"
+            config BSP_USING_EADC
+                bool "Enable Enhanced Analog-to-Digital Converter(EADC)"
+                select BSP_USING_EADC0
+                help
+                    Choose this option if you need to active EADC.
+
+            config BSP_USING_LPADC
+                bool "Enable Low-Power Analog-to-Digital Converter(LPADC)"
+                select BSP_USING_LPADC0
+                help
+                    Choose this option if you need to active LPADC.
+        endchoice
+    endif
+
     menuconfig BSP_USING_CANFD
         bool "Enable Controller Area Network Flexible Data-Rate Controller(CANFD)"
         select RT_USING_CAN
@@ -94,15 +121,6 @@ config SOC_SERIES_M2L31
 
             config BSP_USING_DAC1
                 bool "Enable DAC1"
-        endif
-
-    menuconfig BSP_USING_EADC
-        bool "Enable Enhanced Analog-to-Digital Converter(EADC)"
-        select RT_USING_ADC
-
-        if BSP_USING_EADC
-            config BSP_USING_EADC0
-                bool "Enable EADC0"
         endif
 
     config BSP_USING_EBI
@@ -241,16 +259,6 @@ config SOC_SERIES_M2L31
 
             config BSP_USING_I2C3
                 bool "Enable I2C3"
-        endif
-
-
-    menuconfig BSP_USING_LPADC
-        bool "Enable Low-Power Analog-to-Digital Converter(LPADC)"
-        select RT_USING_ADC
-
-        if BSP_USING_LPADC
-            config BSP_USING_LPADC0
-                bool "Enable LPADC0"
         endif
 
     menuconfig BSP_USING_LPI2C

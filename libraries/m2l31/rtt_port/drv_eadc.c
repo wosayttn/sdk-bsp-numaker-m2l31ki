@@ -83,7 +83,7 @@ static rt_uint8_t nu_eadc_get_resolution(struct rt_adc_device *device)
 static rt_uint32_t _eadc_convert(nu_eadc_t psNuEADC, rt_uint32_t channel)
 {
 #define CONFIG_CONV_INTSEL             0
-#define CONFIG_EXT_SMPL_TIME           0xf
+#define CONFIG_EXT_SMPL_TIME           0xff
 #define CONFIG_SMPL_MODULE_ACU_TIMES   (psNuEADC->conv_power << EADC_MCTL1_ACU_Pos)
 
     rt_uint32_t u32ConvValue, u32ModuleNum;
@@ -150,6 +150,8 @@ static rt_int16_t nu_eadc_get_vref(struct rt_adc_device *device)
     ---------- = -------------------------
        3072          i32ConversionData
     */
+    // rt_kprintf("u32VBG: %d, AVDD: %d\n", u32VBG, 3072 * s_u32BuiltInBandGapValue / u32VBG);
+
     return (3072 * s_u32BuiltInBandGapValue / u32VBG);
 }
 

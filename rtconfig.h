@@ -202,9 +202,6 @@
 /* STM32 HAL & SDK Drivers */
 
 
-/* Infineon HAL Packages */
-
-
 /* Kendryte SDK */
 
 
@@ -270,12 +267,11 @@
 
 #define SOC_FAMILY_NUMICRO
 #define SOC_SERIES_M2L31
-#define BSP_USING_CLK
-#define BSP_USING_EADC
+#define BSP_USING_ADC
 #define BSP_USING_EADC0
+#define BSP_USING_EADC
+#define BSP_USING_CLK
 #define BSP_USING_GPIO
-#define BSP_USING_LPADC
-#define BSP_USING_LPADC0
 #define BSP_USING_PDMA
 #define NU_PDMA_MEMFUN_ACTOR_MAX 2
 #define NU_PDMA_SGTBL_POOL_SIZE 16
