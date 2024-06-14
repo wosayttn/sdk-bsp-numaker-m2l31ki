@@ -45,6 +45,8 @@ void EADC_Open(EADC_T *eadc, uint32_t u32InputMode)
 
     /* Enable EADC Boost mode */
     outpw(EADC0_BASE+0xFF4, inpw(EADC0_BASE+0xFF4) | BIT1);
+    eadc->CTL &= (~EADC_CTL_DIFFEN_Msk);
+    eadc->CTL |= (u32InputMode | EADC_CTL_ADCEN_Msk);
 
     /* Do calibration for EADC to decrease the effect of electrical random noise. */
     if ((eadc->CALSR & EADC_CALSR_CALIF_Msk) == 0)
@@ -62,7 +64,7 @@ void EADC_Open(EADC_T *eadc, uint32_t u32InputMode)
 
         eadc->CALSR |= EADC_CALSR_CALIF_Msk;        /* Clear Calibration Finish Interrupt Flag */
         eadc->CALCTL |= EADC_CALCTL_CAL_Msk;        /* Enable Calibration function */
-        u32Delay = SystemCoreClock/20;
+        u32Delay = SystemCoreClock;
         while((eadc->CALSR & EADC_CALSR_CALIF_Msk) != EADC_CALSR_CALIF_Msk) /* Wait calibration finish */
         {
             if (--u32Delay == 0)
@@ -72,10 +74,6 @@ void EADC_Open(EADC_T *eadc, uint32_t u32InputMode)
             }
         }
     }
-
-    eadc->CTL &= (~EADC_CTL_DIFFEN_Msk);
-
-    eadc->CTL |= (u32InputMode | EADC_CTL_ADCEN_Msk);
 }
 
 /**
