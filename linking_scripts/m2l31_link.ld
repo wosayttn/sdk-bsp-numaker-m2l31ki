@@ -48,8 +48,8 @@ SECTIONS
   .text :
   {
     KEEP(*(.vectors))
-    *custom_loader.o(.rodata*)
-    *custom_loader.o(.text*)
+    KEEP(*(CLINFO))
+    *custom_loader.o(.text* .rodata*)
     *startup_M2L31.o( .text* .rodata*)
     *(.text*)
 

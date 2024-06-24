@@ -207,10 +207,9 @@ static S_TOUCH_SW sADCTP =
     #include <rtgui/driver.h>
 #endif
 
-static rt_base_t g_ILI9341_SPI_CS_PIN = NU_GET_PININDEX(NU_PD, 3);
 int rt_hw_ili9341_port(void)
 {
-    if (rt_hw_lcd_ili9341_spi_init("uspi0", (void *)&g_ILI9341_SPI_CS_PIN) != RT_EOK)
+    if (rt_hw_lcd_ili9341_spi_init("spi0", (void *)RT_NULL) != RT_EOK)
         return -1;
 
     rt_hw_lcd_ili9341_init();

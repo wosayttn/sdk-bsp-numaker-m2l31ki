@@ -14,7 +14,7 @@ board:
   sale_contact_global: https://www.nuvoton.com
   small_image: doc/images/small.png
   vendor: Nuvoton
-  version: v2.1
+  version: v2.2
 chip:
   chip_name: M2L31KIDAE
   clock_source: HXT

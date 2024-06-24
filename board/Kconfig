@@ -51,10 +51,9 @@ menu "Hardware Drivers Config"
         if BOARD_USING_NUTFT
 
             config BOARD_USING_LCD_ILI9341
-                bool "Enable LCM(Over USCI0)"
-                select BSP_USING_USCI
-                select BSP_USING_USCI0
-                select BSP_USING_USPI0
+                bool "Enable LCM(Over SPI0)"
+                select BSP_USING_SPI
+                select BSP_USING_SPI0
                 select NU_PKG_USING_ILI9341
                 select NU_PKG_USING_ILI9341_SPI
                 select NU_PKG_ILI9341_WITH_OFFSCREEN_FRAMEBUFFER

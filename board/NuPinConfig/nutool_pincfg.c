@@ -26,7 +26,7 @@ void expansion_nutft_pin_init(void)
 {
 #if defined(BOARD_USING_LCD_ILI9341)
     SYS->GPD_MFP0 &= ~(SYS_GPD_MFP0_PD0MFP_Msk | SYS_GPD_MFP0_PD1MFP_Msk | SYS_GPD_MFP0_PD2MFP_Msk | SYS_GPD_MFP0_PD3MFP_Msk);
-    SYS->GPD_MFP0 |= (SYS_GPD_MFP0_PD0MFP_USCI0_CLK | SYS_GPD_MFP0_PD1MFP_USCI0_DAT0 | SYS_GPD_MFP0_PD2MFP_USCI0_DAT1 /*| SYS_GPD_MFP0_PD3MFP_USCI0_CTL1*/);
+    SYS->GPD_MFP0 |= (SYS_GPD_MFP0_PD0MFP_SPI0_MOSI | SYS_GPD_MFP0_PD1MFP_SPI0_MISO | SYS_GPD_MFP0_PD2MFP_SPI0_CLK | SYS_GPD_MFP0_PD3MFP_SPI0_SS);
 
     SYS->GPA_MFP2 &= ~(SYS_GPA_MFP2_PA8MFP_Msk | SYS_GPA_MFP2_PA9MFP_Msk | SYS_GPA_MFP2_PA11MFP_Msk);
 #endif
@@ -89,7 +89,7 @@ void nutool_pincfg_init(void)
 {
     /* Vref connect to internal */
     SYS_SetVRef(SYS_VREFCTL_VREF_PIN);
-	
+
 #if defined(BSP_USING_UART0)
     nutool_pincfg_init_uart0();
 #endif
