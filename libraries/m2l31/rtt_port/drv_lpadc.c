@@ -16,8 +16,6 @@
 #include <rtdevice.h>
 #include "NuMicro.h"
 
-#define CONFIG_MAX_CHN_NUM  32
-
 /* Private define ---------------------------------------------------------------*/
 enum
 {
@@ -27,6 +25,44 @@ enum
 #endif
     LPADC_CNT
 };
+
+enum
+{
+    LPADC_CH_0,
+    LPADC_CH_1,
+    LPADC_CH_2,
+    LPADC_CH_3,
+    LPADC_CH_4,
+    LPADC_CH_5,
+    LPADC_CH_6,
+    LPADC_CH_7,
+    LPADC_CH_8,
+    LPADC_CH_9,
+    LPADC_CH_10,
+    LPADC_CH_11,
+    LPADC_CH_12,
+    LPADC_CH_13,
+    LPADC_CH_14,
+    LPADC_CH_15,
+    LPADC_CH_16,
+    LPADC_CH_17,
+    LPADC_CH_18,
+    LPADC_CH_19,
+    LPADC_CH_20,
+    LPADC_CH_21,
+    LPADC_CH_22,
+    LPADC_CH_23,
+    LPADC_CH_OPA0,
+    LPADC_CH_OPA1,
+    LPADC_CH_OPA2,
+    LPADC_CH_AVDD_DIV4 = 28, // 28, AVDD/4
+    LPADC_CH_VBG,            // 29, Band-gap voltage
+    LPADC_CH_VTEMP,          // 30, Internal Temperature sensor
+    LPADC_CH_VBAT_DIV4,      // 31, VBAT/4
+    LPADC_CH_NUM
+};
+
+#define CONFIG_MAX_CHN_NUM  LPADC_CH_NUM
 
 /* Private Typedef --------------------------------------------------------------*/
 struct nu_lpadc
@@ -77,9 +113,109 @@ static rt_uint8_t nu_lpadc_get_resolution(struct rt_adc_device *device)
     return 12; /* 12-bit */
 }
 
+/* nu_lpadc_enabled - Enable ADC clock and wait for ready */
+static rt_err_t nu_lpadc_enabled(struct rt_adc_device *device, rt_uint32_t channel, rt_bool_t enabled)
+{
+    nu_lpadc_t psNuLPADC = (nu_lpadc_t)device;
+
+    RT_ASSERT(device);
+
+    if (channel >= psNuLPADC->max_chn_num)
+        return -(RT_EINVAL);
+
+    if (enabled)
+    {
+        uint32_t u32ChnMsk = psNuLPADC->chn_msk | (0x1 << channel);
+
+        if (psNuLPADC->chn_msk != u32ChnMsk)
+        {
+            LPADC_Close(psNuLPADC->base);
+
+            LPADC_POWER_ON(psNuLPADC->base);
+
+            /* Set input mode as single-end, Single-cycle scan mode and select channels */
+            LPADC_Open(psNuLPADC->base, LPADC_ADCR_DIFFEN_SINGLE_END, LPADC_ADCR_ADMD_SINGLE_CYCLE, u32ChnMsk);
+
+            switch (channel)
+            {
+            case LPADC_CH_AVDD_DIV4:
+                /* Enable AVDD/4 */
+                SYS->IVSCTL |= SYS_IVSCTL_AVDDDIV4EN_Msk;
+                break;
+
+            case LPADC_CH_VBG:
+                SYS_UnlockReg();
+                /* Force to enable internal voltage band-gap. */
+                SYS->VREFCTL |= SYS_VREFCTL_VBGFEN_Msk;
+                break;
+
+            case LPADC_CH_VTEMP:
+                /* Enable temperature sensor */
+                SYS->IVSCTL |= SYS_IVSCTL_VTEMPEN_Msk;
+                break;
+
+            case LPADC_CH_VBAT_DIV4:
+                /* Enable VBAT/4 */
+                SYS->IVSCTL |= SYS_IVSCTL_VBATUGEN_Msk;
+                break;
+
+            default:
+                break;
+            }
+
+            psNuLPADC->chn_msk = u32ChnMsk;
+        }
+    }
+    else
+    {
+        psNuLPADC->chn_msk &= ~(0x1 << channel);
+
+        switch (channel)
+        {
+        case LPADC_CH_AVDD_DIV4:
+            /* Disable AVDD/4 */
+            SYS->IVSCTL &= ~SYS_IVSCTL_AVDDDIV4EN_Msk;
+            break;
+
+        case LPADC_CH_VBG:
+            SYS_UnlockReg();
+            /* Force to enable internal voltage band-gap. */
+            SYS->VREFCTL &= ~SYS_VREFCTL_VBGFEN_Msk;
+            break;
+
+        case LPADC_CH_VTEMP:
+            /* Disable temperature sensor */
+            SYS->IVSCTL &= ~SYS_IVSCTL_VTEMPEN_Msk;
+            break;
+
+        case LPADC_CH_VBAT_DIV4:
+            /* Disable VBAT/4 */
+            SYS->IVSCTL &= ~SYS_IVSCTL_VBATUGEN_Msk;
+            break;
+
+        default:
+            break;
+        }
+
+        if (psNuLPADC->chn_msk == 0)
+        {
+            LPADC_Close(psNuLPADC->base);
+
+            LPADC_POWER_DOWN(psNuLPADC->base);
+        }
+    }
+
+    return RT_EOK;
+}
+
 static rt_uint32_t _lpadc_convert(nu_lpadc_t psNuLPADC, rt_uint32_t channel)
 {
 #define CONFIG_EXT_SMPL_TIME           20
+
+    if (nu_lpadc_enabled((struct rt_adc_device *)psNuLPADC, channel, RT_TRUE) != RT_EOK)
+    {
+        return 0xFFFFFFFF;
+    }
 
     /* Clear the A/D interrupt flag for safe */
     LPADC_CLR_INT_FLAG(psNuLPADC->base, LPADC_ADF_INT);
@@ -106,16 +242,7 @@ static rt_uint32_t _lpadc_convert(nu_lpadc_t psNuLPADC, rt_uint32_t channel)
 static rt_int16_t nu_lpadc_get_vref(struct rt_adc_device *device)
 {
     nu_lpadc_t psNuLPADC = (nu_lpadc_t)device;
-    rt_uint16_t u32VBG;
-
-    /* Force to enable internal voltage band-gap. */
-    SYS_UnlockReg();
-
-    SYS->VREFCTL |= SYS_VREFCTL_VBGFEN_Msk;
-    nu_lpadc_enabled(device, 29, RT_TRUE);
-    u32VBG = _lpadc_convert(psNuLPADC, 29);
-    nu_lpadc_enabled(device, 29, RT_FALSE);
-    SYS->VREFCTL &= ~SYS_VREFCTL_VBGFEN_Msk;
+    rt_uint16_t u32VBG = _lpadc_convert(psNuLPADC, LPADC_CH_VBG);
 
     /* Use Conversion result of Band-gap to calculating AVdd */
     /*
@@ -124,47 +251,6 @@ static rt_int16_t nu_lpadc_get_vref(struct rt_adc_device *device)
        3072          i32ConversionData
     */
     return (3072 * s_u32BuiltInBandGapValue / u32VBG);
-}
-
-/* nu_lpadc_enabled - Enable ADC clock and wait for ready */
-static rt_err_t nu_lpadc_enabled(struct rt_adc_device *device, rt_uint32_t channel, rt_bool_t enabled)
-{
-    nu_lpadc_t psNuLPADC = (nu_lpadc_t)device;
-
-    RT_ASSERT(device);
-
-    if (channel >= psNuLPADC->max_chn_num)
-        return -(RT_EINVAL);
-
-    if (enabled)
-    {
-        uint32_t u32ChnMsk = psNuLPADC->chn_msk | (0x1 << channel);
-
-        if (psNuLPADC->chn_msk != u32ChnMsk)
-        {
-            LPADC_Close(psNuLPADC->base);
-
-            LPADC_POWER_ON(psNuLPADC->base);
-
-            /* Set input mode as single-end, Single-cycle scan mode and select channels */
-            LPADC_Open(psNuLPADC->base, LPADC_ADCR_DIFFEN_SINGLE_END, LPADC_ADCR_ADMD_SINGLE_CYCLE, u32ChnMsk);
-
-            psNuLPADC->chn_msk = u32ChnMsk;
-        }
-    }
-    else
-    {
-        psNuLPADC->chn_msk &= ~(0x1 << channel);
-
-        if (psNuLPADC->chn_msk == 0)
-        {
-            LPADC_Close(psNuLPADC->base);
-
-            LPADC_POWER_DOWN(psNuLPADC->base);
-        }
-    }
-
-    return RT_EOK;
 }
 
 static rt_err_t nu_lpadc_convert(struct rt_adc_device *device, rt_uint32_t channel, rt_uint32_t *value)

@@ -7,7 +7,6 @@
 * Change Logs:
 * Date            Author       Notes
 * 2024-4-1        Wayne        First version
-*
 ******************************************************************************/
 
 #include <rtconfig.h>
@@ -16,8 +15,6 @@
 
 #include <rtdevice.h>
 #include "NuMicro.h"
-
-#define CONFIG_MAX_CHN_NUM  24
 
 /* Private define ---------------------------------------------------------------*/
 enum
@@ -28,6 +25,44 @@ enum
 #endif
     EADC_CNT
 };
+
+enum
+{
+    EADC_CH_0,
+    EADC_CH_1,
+    EADC_CH_2,
+    EADC_CH_3,
+    EADC_CH_4,
+    EADC_CH_5,
+    EADC_CH_6,
+    EADC_CH_7,
+    EADC_CH_8,
+    EADC_CH_9,
+    EADC_CH_10,
+    EADC_CH_11,
+    EADC_CH_12,
+    EADC_CH_13,
+    EADC_CH_14,
+    EADC_CH_15,
+    EADC_CH_16,
+    EADC_CH_17,
+    EADC_CH_18,
+    EADC_CH_19,
+    EADC_CH_20,
+    EADC_CH_21,
+    EADC_CH_22,
+    EADC_CH_23,
+    EADC_CH_24,
+    EADC_CH_25,
+    EADC_CH_26,
+    EADC_CH_AVDD_DIV4,  // 27, AVDD/4
+    EADC_CH_VBG,        // 28, Band-gap voltage
+    EADC_CH_VTEMP,      // 29, Internal Temperature sensor
+    EADC_CH_VBAT_DIV4,  // 30, VBAT/4
+    EADC_CH_NUM
+};
+
+#define CONFIG_MAX_CHN_NUM  EADC_CH_NUM
 
 /* Private Typedef --------------------------------------------------------------*/
 struct nu_eadc
@@ -80,6 +115,92 @@ static rt_uint8_t nu_eadc_get_resolution(struct rt_adc_device *device)
     return 12; /* 12-bit */
 }
 
+/* nu_adc_enabled - Enable ADC clock and wait for ready */
+static rt_err_t nu_eadc_enabled(struct rt_adc_device *device, rt_uint32_t channel, rt_bool_t enabled)
+{
+    nu_eadc_t psNuEADC = (nu_eadc_t)device;
+
+    RT_ASSERT(device);
+
+    if (channel >= psNuEADC->max_chn_num)
+        return -(RT_EINVAL);
+
+    if (enabled)
+    {
+        if (psNuEADC->chn_msk == 0)
+        {
+            EADC_Open(psNuEADC->base, EADC_CTL_DIFFEN_SINGLE_END);
+        }
+
+        switch (channel)
+        {
+        case EADC_CH_AVDD_DIV4:
+            /* Enable AVDD/4 */
+            SYS->IVSCTL |= SYS_IVSCTL_AVDDDIV4EN_Msk;
+            break;
+
+        case EADC_CH_VBG:
+            SYS_UnlockReg();
+            /* Force to enable internal voltage band-gap. */
+            SYS->VREFCTL |= SYS_VREFCTL_VBGFEN_Msk;
+            break;
+
+        case EADC_CH_VTEMP:
+            /* Enable temperature sensor */
+            SYS->IVSCTL |= SYS_IVSCTL_VTEMPEN_Msk;
+            break;
+
+        case EADC_CH_VBAT_DIV4:
+            /* Enable VBAT/4 */
+            SYS->IVSCTL |= SYS_IVSCTL_VBATUGEN_Msk;
+            break;
+
+        default:
+            break;
+        }
+
+        psNuEADC->chn_msk |= (0x1 << channel);
+    }
+    else
+    {
+        psNuEADC->chn_msk &= ~(0x1 << channel);
+
+        switch (channel)
+        {
+        case EADC_CH_AVDD_DIV4:
+            /* Disable AVDD/4 */
+            SYS->IVSCTL &= ~SYS_IVSCTL_AVDDDIV4EN_Msk;
+            break;
+
+        case EADC_CH_VBG:
+            SYS_UnlockReg();
+            /* Force to enable internal voltage band-gap. */
+            SYS->VREFCTL &= ~SYS_VREFCTL_VBGFEN_Msk;
+            break;
+
+        case EADC_CH_VTEMP:
+            /* Disable temperature sensor */
+            SYS->IVSCTL &= ~SYS_IVSCTL_VTEMPEN_Msk;
+            break;
+
+        case EADC_CH_VBAT_DIV4:
+            /* Disable VBAT/4 */
+            SYS->IVSCTL &= ~SYS_IVSCTL_VBATUGEN_Msk;
+            break;
+
+        default:
+            break;
+        }
+
+        if (psNuEADC->chn_msk == 0)
+        {
+            EADC_Close(psNuEADC->base);
+        }
+    }
+
+    return RT_EOK;
+}
+
 static rt_uint32_t _eadc_convert(nu_eadc_t psNuEADC, rt_uint32_t channel)
 {
 #define CONFIG_CONV_INTSEL             0
@@ -88,9 +209,9 @@ static rt_uint32_t _eadc_convert(nu_eadc_t psNuEADC, rt_uint32_t channel)
 
     rt_uint32_t u32ConvValue, u32ModuleNum;
 
-    if (psNuEADC->chn_msk == 0)
+    if (nu_eadc_enabled((struct rt_adc_device *)psNuEADC, channel, RT_TRUE) != RT_EOK)
     {
-        EADC_Open(psNuEADC->base, EADC_CTL_DIFFEN_SINGLE_END);
+        return 0xFFFFFFFF;
     }
 
     u32ModuleNum = channel;
@@ -128,11 +249,6 @@ static rt_uint32_t _eadc_convert(nu_eadc_t psNuEADC, rt_uint32_t channel)
 
     u32ConvValue = EADC_GET_CONV_DATA(psNuEADC->base, u32ModuleNum);
 
-    if (psNuEADC->chn_msk == 0)
-    {
-        EADC_Close(psNuEADC->base);
-    }
-
     return u32ConvValue;
 }
 
@@ -142,7 +258,7 @@ static rt_int16_t nu_eadc_get_vref(struct rt_adc_device *device)
 
     RT_ASSERT(device);
 
-    u32VBG = _eadc_convert((nu_eadc_t)device, 28); // VBG Channel
+    u32VBG = _eadc_convert((nu_eadc_t)device, EADC_CH_VBG); // VBG Channel
 
     /* Use Conversion result of Band-gap to calculating AVdd */
     /*
@@ -153,38 +269,6 @@ static rt_int16_t nu_eadc_get_vref(struct rt_adc_device *device)
     // rt_kprintf("u32VBG: %d, AVDD: %d\n", u32VBG, 3072 * s_u32BuiltInBandGapValue / u32VBG);
 
     return (3072 * s_u32BuiltInBandGapValue / u32VBG);
-}
-
-/* nu_adc_enabled - Enable ADC clock and wait for ready */
-static rt_err_t nu_eadc_enabled(struct rt_adc_device *device, rt_uint32_t channel, rt_bool_t enabled)
-{
-    nu_eadc_t psNuEADC = (nu_eadc_t)device;
-
-    RT_ASSERT(device);
-
-    if (channel >= psNuEADC->max_chn_num)
-        return -(RT_EINVAL);
-
-    if (enabled)
-    {
-        if (psNuEADC->chn_msk == 0)
-        {
-            EADC_Open(psNuEADC->base, EADC_CTL_DIFFEN_SINGLE_END);
-        }
-
-        psNuEADC->chn_msk |= (0x1 << channel);
-    }
-    else
-    {
-        psNuEADC->chn_msk &= ~(0x1 << channel);
-
-        if (psNuEADC->chn_msk == 0)
-        {
-            EADC_Close(psNuEADC->base);
-        }
-    }
-
-    return RT_EOK;
 }
 
 static rt_err_t nu_eadc_convert(struct rt_adc_device *device, rt_uint32_t channel, rt_uint32_t *value)
@@ -235,7 +319,7 @@ static rt_err_t nu_eadc_control(rt_device_t device, int cmd, void *args)
             psNuEADC->conv_power = u8ConvPwr;
         }
 
-        rt_kprintf("%s %d\n", __func__, psNuEADC->conv_power);
+        //rt_kprintf("%s %d\n", __func__, psNuEADC->conv_power);
 
         return (psNuEADC->conv_power != u8ConvPwr) ? -RT_EINVAL : RT_EOK;
     }
